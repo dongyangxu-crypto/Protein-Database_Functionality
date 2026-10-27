@@ -1,4 +1,4 @@
-# 蛋白质功能特性数据库 · Protein Functional Properties Database
+# PFD · Protein Functionality Database（蛋白质功能特性数据库）
 
 可搜索的食品蛋白质功能特性数据库：从已发表论文中提取的 17 项功能特性数值，每个数值都对应到具体样品（蛋白来源、组成、复配物）、样品处理（方法、温度、时间、pH…）和测试方法（例如溶解度用 Bradford 法、粒径用动态光散射）。
 
@@ -8,7 +8,7 @@ A searchable database of food protein functional properties. Every value is link
 
 ## 内容 / Contents
 
-| | 数量 Count（2026-10-21） |
+| | 数量 Count（2026-10-27） |
 |---|---|
 | 论文 Papers | 2,338 |
 | 样品 Samples | 18,936 |
@@ -37,19 +37,20 @@ A searchable database of food protein functional properties. Every value is link
 | 文件 File | 一行是 One row per | 主要的列 Key columns |
 |---|---|---|
 | `papers.csv` | 论文 paper | `doi`, `title`, `journal` |
-| `samples.csv` | 样品 sample | `sample_id`（`doi#N`）, `sample_name`, `protein_source`, `protein_category`, `protein_form`, `protein_conc`, `ingredients_summary`, `treatment_summary`, `system` |
+| `samples.csv` | 样品 sample | `sample_id`（`doi#N`）, `sample_name`, `protein_source`, `protein_source_std`, `protein_category`, `protein_form`, `protein_form_std`, `protein_conc`, `ingredients_summary`, `treatment_summary`, `treatment_types`, `system` |
 | `ingredients.csv` | 复配物 ingredient | `sample_id`, `name`, `category`, `amount` |
-| `treatments.csv` | 样品处理步骤 sample treatment step | `sample_id`, `step_no`, `treatment_method`, `category`, `params`, `temperature_c`, `time_min`, `ph`, `pressure_mpa`, `power_w`, `frequency_khz` |
+| `treatments.csv` | 样品处理步骤 sample treatment step | `sample_id`, `step_no`, `treatment_method`, `category`, `treatment_type`, `params`, `temperature_c`, `time_min`, `ph`, `pressure_mpa`, `power_w`, `frequency_khz` |
 | `treatment_params.csv` | 样品处理参数 treatment parameter | `sample_id`, `step_no`, `name`, `value`, `unit` |
-| `measurements.csv` | 数值 value | `measurement_id`, `sample_id`, `property`, `measure_name`, `value`, `sd`, `unit`, `conditions_all`, `test_method`, `method_params`, `method_status`, `source_type`, `data_origin`, `source_item` |
+| `measurements.csv` | 数值 value | `measurement_id`, `sample_id`, `property`, `measure_name`, `value`, `sd`, `unit`, `value_std`, `unit_std`, `conditions_all`, `test_method`, `test_method_en`, `method_params`, `method_status`, `source_type`, `data_origin`, `source_item` |
 | `measurement_conditions.csv` | 测定条件 measurement condition | `measurement_id`, `name`, `value`, `unit` |
-| `methods.csv` | 测试方法 test method | `doi`, `method_id`, `property`, `test_method`, `method_raw`, `reference`, `instrument`, `method_params`, `applies_to` |
+| `methods.csv` | 测试方法 test method | `doi`, `method_id`, `property`, `test_method`, `test_method_en`, `method_raw`, `reference`, `instrument`, `method_params`, `method_summary`, `applies_to` |
 | `flat_measurements.csv` | 数值（含样品、处理、论文信息）value with all sample/paper info | 以上全部 all of the above |
 
 约定 / Conventions：
 - `value` 是纯数字；原文不是单个数（如「<0.1」）时留空，原样在 `value_text`。/ `value` is numeric; non-numeric entries (e.g. "<0.1") are kept in `value_text`.
 - 读图数值有纵轴倍率（`multiplier`，如 10^3）时，`value` 是刻度读数，没有乘倍率。/ For figure values with an axis multiplier, `value` is the axis reading (not multiplied).
-- `value_std` / `unit_std`：粒径换算成 nm、ζ-电位换算成 mV；处理温度 °C、时间 min、压力 MPa、功率 W、频率 kHz。其余保持原单位。/ Particle size in nm and ζ-potential in mV; treatment temperature °C, time min, pressure MPa, power W, frequency kHz. Other properties keep their original units.
+- `value_std` / `unit_std`：按性质换成标准单位（粒径 nm、ζ-电位 mV、溶解度 % 或 mg/mL、乳化性 m²/g、min 或 %、凝胶性 Pa 或 N、持水持油 g/g 或 mL/g、巯基二硫键 µmol/g…），单位写法认不出或基准不同的留空；处理温度 °C、时间 min、压力 MPa、功率 W、频率 kHz。/ Values converted to a standard unit per property (particle size nm, ζ-potential mV, solubility % or mg/mL, EAI m²/g, gel strength Pa or N, WHC/OHC g/g or mL/g, SH/SS µmol/g …); left empty where the unit could not be recognised or the basis differs. Treatment temperature °C, time min, pressure MPa, power W, frequency kHz.
+- 规范化的列 / Normalised columns（程序按规则从原文列推出，原文列照留 / derived by rules from the original columns, which are kept）：`protein_source_std`（蛋白来源标准名称 / standard protein source, e.g. Soybean, Milk (bovine)）、`protein_form_std`（Isolate、Hydrolysate…）、`treatment_types` / `treatment_type`（Heating、Ultrasound、Enzymatic hydrolysis…）、`test_method_en`（测试方法英文名 / English test-method name）、`method_summary`（英文方法概述，可照着复现 / English method summary for reproducing the test）。
 - 一个数值的 `method_id`（如 M2）指向 `methods.csv` 里同一 `doi` 的那一行。/ A value's `method_id` points to the row with the same `doi` in `methods.csv`.
 - 类别值是中文（网站上可切换英文）。/ Category values are in Chinese (the website shows English translations).
 
@@ -63,8 +64,8 @@ python scripts/build_site_data.py --db <数据库目录 database folder>
 git add -A && git commit -m "Update data" && git push
 ```
 
-网站是纯静态页面（`index.html` + `assets/`），数据在浏览器里解压和筛选，不需要服务器。本地预览：`python scripts/serve.py`，然后打开 http://localhost:8765。
-The website is fully static (`index.html` + `assets/`); data are decompressed and filtered in the browser. Local preview: `python scripts/serve.py`, then open http://localhost:8765.
+网站是纯静态页面（`index.html` + `assets/`），数据按需加载（`data/index.*` 打开时下载，`data/chunk/` 按需下载），在浏览器里筛选、画图、导出，不需要服务器。本地预览：`python scripts/serve.py`，然后打开 http://localhost:8765。
+The website is fully static (`index.html` + `assets/`); data are loaded on demand (`data/index.*` on open, `data/chunk/` as needed) and filtered, plotted and exported in the browser. Local preview: `python scripts/serve.py`, then open http://localhost:8765.
 
 ## 许可 / License
 

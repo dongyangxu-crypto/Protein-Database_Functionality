@@ -3,97 +3,110 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>蛋白质功能特性数据库 · Protein Functional Properties Database</title>
-<meta name="description" content="Searchable database of food protein functional properties (solubility, emulsifying, foaming, gelling, particle size, ζ-potential …) extracted from published papers, with sample composition and processing conditions.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232f6f5e'/%3E%3Cpath d='M9 22V10h6.5a4 4 0 0 1 0 8H9' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-<meta name="data-version" content="c8ef541689">
-<link rel="stylesheet" href="assets/style.css?v=2df7698700">
+<title>PFD · Protein Functionality Database</title>
+<meta name="description" content="PFD (Protein Functionality Database): searchable database of food protein functional properties (solubility, emulsifying, foaming, gelling, particle size, ζ-potential …) extracted from published papers, with sample composition, processing conditions and test methods.">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<meta name="data-version" content="42b71e4606">
+<link rel="stylesheet" href="assets/style.css?v=7dfa593a8c">
 </head>
 <body>
+<div class="progress" id="progress" hidden></div>
 <header class="top">
-  <div class="brand">
-    <h1 data-i18n="title">蛋白质功能特性数据库</h1>
-    <p class="sub" id="stats"></p>
-  </div>
-  <div class="top-actions">
-    <a class="btn ghost" id="repo-link" href="#" hidden data-i18n="source_code">GitHub</a>
-    <a class="btn ghost" href="data/protein_db_csv.zip" download data-i18n="download_all">下载全部数据（CSV）</a>
-    <button class="btn" id="lang-btn" type="button" aria-label="Switch language">EN</button>
+  <div class="wrap">
+    <a class="brand-link" href="#/" aria-label="PFD home">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M20 10 C 38 2, 60 14, 55 35 C 51 51, 33 60, 19 53 C 6 47, 5 35, 14 31 C 22 27, 6 19, 20 10 Z" fill="#f5b700"/><path d="M16 44 L26 35 L34 39 L47 22" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="47" cy="22" r="4" fill="#ffffff"/></svg>
+      <span class="brand-word"><b>PFD</b><span data-i18n="fullname">Protein Functionality Database</span></span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="#/" data-nav="home" data-i18n="nav_home">概览</a>
+      <a href="#/search" data-nav="search" data-i18n="nav_search">检索</a>
+      <a href="#/compare" data-nav="compare"><span data-i18n="nav_compare">对比</span><span class="count-badge" id="cmp-count">0</span></a>
+    </nav>
+    <div class="top-actions">
+      <a class="btn ghost small" href="data/protein_db_csv.zip" download data-i18n="download_all">下载全部数据（CSV）</a>
+      <a class="btn ghost small" id="repo-link" href="#" hidden>GitHub</a>
+      <button class="btn ghost small" id="lang-btn" type="button" aria-label="Switch language">EN</button>
+    </div>
   </div>
 </header>
 
-<p class="notice" id="notice" data-i18n-html="notice"></p>
+<div class="wrap"><p class="notice" id="notice" data-i18n-html="notice"></p></div>
 
-<div class="layout">
-  <aside class="filters" id="filters" aria-label="Filters">
-    <div class="filters-head">
-      <h2 data-i18n="filters">筛选</h2>
-      <button class="link" id="reset" type="button" data-i18n="reset">清除全部</button>
-    </div>
-    <label class="field">
-      <span data-i18n="keyword">关键词</span>
-      <input id="q" type="search" autocomplete="off" spellcheck="false">
-      <small data-i18n="keyword_hint">题目、DOI、样品、蛋白、复配物、处理、测量名称；空格分开的词都要出现</small>
-    </label>
-    <div id="facets"></div>
-    <fieldset class="range">
-      <legend data-i18n="value_range">数值范围（原单位）</legend>
-      <div class="pair"><input id="vmin" type="number" step="any" inputmode="decimal" data-i18n-ph="min"><span>–</span><input id="vmax" type="number" step="any" inputmode="decimal" data-i18n-ph="max"></div>
-    </fieldset>
-    <fieldset class="range">
-      <legend data-i18n="temp_range">处理温度（°C）</legend>
-      <div class="pair"><input id="tmin" type="number" step="any" inputmode="decimal" data-i18n-ph="min"><span>–</span><input id="tmax" type="number" step="any" inputmode="decimal" data-i18n-ph="max"></div>
-      <small data-i18n="temp_hint">任一处理步骤的温度落在范围内</small>
-    </fieldset>
-  </aside>
+<main class="wrap view" id="view-home" hidden></main>
 
-  <main class="results">
-    <div class="toolbar">
-      <button class="btn ghost only-narrow" id="toggle-filters" type="button" data-i18n="filters">筛选</button>
-      <p class="count" id="count" aria-live="polite"></p>
-      <div class="toolbar-right">
-        <label class="sort"><span data-i18n="sort">排序</span>
-          <select id="sort">
-            <option value="paper" data-i18n="sort_paper">按文章</option>
-            <option value="prop" data-i18n="sort_prop">按性质</option>
-            <option value="vasc" data-i18n="sort_vasc">数值从小到大</option>
-            <option value="vdesc" data-i18n="sort_vdesc">数值从大到小</option>
-          </select>
-        </label>
-        <button class="btn" id="export" type="button" data-i18n="export">导出当前结果</button>
+<main class="wrap view" id="view-search" hidden>
+  <div class="layout">
+    <aside class="filters card" id="filters" aria-label="Filters">
+      <div class="filters-head">
+        <h2 data-i18n="filters">筛选</h2>
+        <button class="link" id="reset" type="button" data-i18n="reset">清除全部</button>
       </div>
-    </div>
-    <div class="table-wrap">
-      <table id="tbl">
-        <thead><tr>
-          <th data-i18n="col_prop">性质</th>
-          <th data-i18n="col_value">数值</th>
-          <th data-i18n="col_sample">样品</th>
-          <th data-i18n="col_protein">蛋白</th>
-          <th data-i18n="col_treat">样品处理</th>
-          <th data-i18n="col_cond">测试方法</th>
-          <th data-i18n="col_source">来源</th>
-        </tr></thead>
-        <tbody id="rows"><tr><td colspan="7" class="loading" data-i18n="loading">正在加载数据…</td></tr></tbody>
-      </table>
-    </div>
-    <nav class="pager" id="pager" aria-label="Pages"></nav>
-  </main>
-</div>
+      <label class="field">
+        <span data-i18n="keyword">关键词</span>
+        <input id="q" type="search" autocomplete="off" spellcheck="false">
+        <small data-i18n="keyword_hint"></small>
+      </label>
+      <div id="facets"></div>
+      <fieldset class="range">
+        <legend data-i18n="value_range">数值范围</legend>
+        <div class="pair"><input id="vmin" type="number" step="any" inputmode="decimal" data-i18n-ph="min"><span>–</span><input id="vmax" type="number" step="any" inputmode="decimal" data-i18n-ph="max"></div>
+        <small data-i18n="value_hint"></small>
+      </fieldset>
+      <fieldset class="range">
+        <legend data-i18n="ph_range">测定 pH</legend>
+        <div class="pair"><input id="phmin" type="number" step="any" inputmode="decimal" data-i18n-ph="min"><span>–</span><input id="phmax" type="number" step="any" inputmode="decimal" data-i18n-ph="max"></div>
+        <small data-i18n="ph_hint"></small>
+      </fieldset>
+      <fieldset class="range">
+        <legend data-i18n="temp_range">样品处理温度（°C）</legend>
+        <div class="pair"><input id="tmin" type="number" step="any" inputmode="decimal" data-i18n-ph="min"><span>–</span><input id="tmax" type="number" step="any" inputmode="decimal" data-i18n-ph="max"></div>
+        <small data-i18n="temp_hint"></small>
+      </fieldset>
+    </aside>
 
-<dialog id="detail" aria-labelledby="detail-title">
-  <div class="dlg-head">
-    <h2 id="detail-title"></h2>
-    <button class="btn ghost" id="detail-close" type="button" data-i18n="close">关闭</button>
+    <section class="results">
+      <div class="active-filters" id="active-filters"></div>
+      <div class="toolbar">
+        <button class="btn ghost small only-narrow" id="toggle-filters" type="button" data-i18n="filters">筛选</button>
+        <p class="count" id="count" aria-live="polite"></p>
+        <div class="toolbar-right">
+          <button class="btn ghost small" id="chart-toggle" type="button" aria-expanded="false" data-i18n="chart_btn">图表</button>
+          <div class="menu">
+            <button class="btn ghost small" id="cols-btn" type="button" aria-expanded="false" data-i18n="cols_btn">显示列</button>
+            <div class="menu-pop" id="cols-pop" hidden></div>
+          </div>
+          <label class="lbl-inline"><span data-i18n="page_size">每页</span>
+            <select id="page-size"><option>25</option><option selected>50</option><option>100</option><option>200</option></select>
+          </label>
+          <div class="menu">
+            <button class="btn small" id="export-btn" type="button" aria-expanded="false" data-i18n="export">导出</button>
+            <div class="menu-pop" id="export-pop" hidden></div>
+          </div>
+        </div>
+      </div>
+      <section class="card chart-panel" id="chart-panel" hidden></section>
+      <div class="card table-wrap">
+        <table id="tbl">
+          <thead id="thead"></thead>
+          <tbody id="rows"><tr><td class="loading" data-i18n="loading">正在加载数据…</td></tr></tbody>
+        </table>
+      </div>
+      <nav class="pager" id="pager" aria-label="Pages"></nav>
+    </section>
   </div>
-  <div id="detail-body"></div>
-</dialog>
+</main>
 
-<footer class="foot">
+<main class="wrap view" id="view-paper" hidden></main>
+<main class="wrap view" id="view-sample" hidden></main>
+<main class="wrap view" id="view-compare" hidden></main>
+
+<footer class="wrap foot">
   <p data-i18n-html="footer"></p>
   <p id="built"></p>
 </footer>
 
-<script src="assets/app.js?v=4fecd7259b"></script>
+<script src="assets/xlsx.js?v=c21235c083"></script>
+<script src="assets/charts.js?v=8e388c85c6"></script>
+<script src="assets/app.js?v=18d9ca6511"></script>
 </body>
 </html>
