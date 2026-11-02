@@ -1,5 +1,5 @@
 'use strict';
-/* 网页上的几种图（纯 SVG，不用第三方库）：横向条形、直方图、分组箱线图、散点。
+/* 网页上的几种图（纯 SVG，不用第三方库）：横向条形、直方图、分组箱线图、散点、按组分列的点图；每张图可下载 PNG / SVG / 数据 CSV。
    规格按 dataviz：细条（≤24px）、数据端 4px 圆角、基线方角、相邻柱子 2px 空隙、点 r≥4 带 2px 底色描边、
    网格线 1px 实线、文字用文字色（不用系列色）、每个图都有悬停提示。 */
 (() => {
@@ -33,6 +33,7 @@
     for (let e = Math.floor(Math.log10(lo)); e <= Math.ceil(Math.log10(hi)); e++) out.push(Math.pow(10, e));
     return out.filter((v) => v >= lo / 1.0001 && v <= hi * 1.0001);
   }
+  const r6 = (v) => (Number.isFinite(v) ? +v.toPrecision(6) : '');
   function quantile(sorted, q) {
     if (!sorted.length) return NaN;
     const pos = (sorted.length - 1) * q, b = Math.floor(pos), r = pos - b;
@@ -83,6 +84,7 @@
         <text class="val-text" x="${labelW + w + 6}" y="${y + band / 2 + 4}">${esc(opt.valueFmt ? opt.valueFmt(d.value) : compact(d.value))}</text></g>`;
     });
     const { tip } = mount(el, W, H, body);
+    el._csv = [[opt.csvLabel || 'label', opt.csvValue || 'value'], ...items.map((d) => [d.label, d.value])];
     bindTips(el, tip, (i) => { const d = items[+i]; return `<b>${esc(d.label)}</b><br>${esc((opt.valueFmt || fmt)(d.value))}${d.note ? '<br>' + esc(d.note) : ''}`; });
     if (opt.onClick) el.querySelector('svg').addEventListener('click', (e) => { const g = e.target.closest('.bar-g'); if (g) opt.onClick(g.dataset.key); });
   }
@@ -118,6 +120,7 @@
     if (opt.yLabel) body += `<text class="ax-title" transform="translate(13 ${m.t + ph / 2}) rotate(-90)" text-anchor="middle">${esc(opt.yLabel)}</text>`;
     const { tip } = mount(el, W, H, body);
     const back = (v) => (opt.log ? Math.pow(10, v) : v);
+    el._csv = [['bin_from', 'bin_to', 'count'], ...bins.map((c, i) => [r6(back(lo + i * step)), r6(back(lo + (i + 1) * step)), c])];
     bindTips(el, tip, (i) => `<b>${fmt(back(lo + i * step))} – ${fmt(back(lo + (+i + 1) * step))}</b><br>${esc(opt.countFmt ? opt.countFmt(bins[i]) : bins[i])}`);
   }
 
@@ -154,6 +157,8 @@
     if (opt.xLabel) body += `<text class="ax-title" x="${m.l + pw / 2}" y="${H - 6}" text-anchor="middle">${esc(opt.xLabel)}</text>`;
     const { tip } = mount(el, W, H, body);
     const b = (v) => fmt(opt.log ? Math.pow(10, v) : v);
+    const raw = (v) => r6(opt.log ? Math.pow(10, v) : v);
+    el._csv = [['group', 'n', 'q1', 'median', 'q3', 'min', 'max'], ...gs.map((g) => [g.label, g.v.length, raw(g.q1), raw(g.med), raw(g.q3), raw(g.min), raw(g.max)])];
     bindTips(el, tip, (i) => { const g = gs[+i]; return `<b>${esc(g.label)}</b><br>${esc(opt.medLbl || 'median')} ${b(g.med)} · IQR ${b(g.q1)} – ${b(g.q3)}<br>${esc(opt.rangeLbl || 'range')} ${b(g.min)} – ${b(g.max)} · n = ${g.v.length}`; });
     if (opt.onClick) el.querySelector('svg').addEventListener('click', (e) => { const g = e.target.closest('.bar-g'); if (g) opt.onClick(g.dataset.key); });
   }
@@ -182,8 +187,82 @@
     if (opt.xLabel) body += `<text class="ax-title" x="${m.l + pw / 2}" y="${H - 6}" text-anchor="middle">${esc(opt.xLabel)}</text>`;
     if (opt.yLabel) body += `<text class="ax-title" transform="translate(13 ${m.t + ph / 2}) rotate(-90)" text-anchor="middle">${esc(opt.yLabel)}</text>`;
     const { tip } = mount(el, W, H, body);
+    el._csv = [['x', 'y', 'series'], ...P.map((p) => [p.x, p.y, p.s ? 'model-derived' : 'author-reported'])];
     bindTips(el, tip, (i) => P[+i].tip);
   }
 
-  window.PFDCharts = { hbar, histogram, boxplot, scatter, fmt, compact, quantile };
+  /** 按组分列的点图（每组一列，纵轴是数值）：groups [{key, label, sub, values:[{v, m(1 = 来源于模型), tip}]}]，
+      opt {yLabel, median, byOrigin, log, onClick(key), empty} —— 单一系列色；区分数据来源时模型值画成空心圆（形状区分，不只靠颜色） */
+  function strip(el, groups, opt = {}) {
+    const G = groups.filter((g) => g.values.some((x) => Number.isFinite(x.v) && (!opt.log || x.v > 0)));
+    if (!G.length) { el.innerHTML = `<div class="chart-empty">${esc(opt.empty || '')}</div>`; el._csv = null; return; }
+    const W = Math.max(320, el.clientWidth || 700), H = 320, m = { l: 58, r: 14, t: 14, b: 58 };
+    const tv = opt.log ? Math.log10 : (v) => v;
+    const all = G.flatMap((g) => g.values.map((x) => x.v)).filter((v) => Number.isFinite(v) && (!opt.log || v > 0)).map(tv);
+    let lo = Math.min(...all), hi = Math.max(...all);
+    if (hi === lo) { lo -= 0.5; hi += 0.5; }
+    const pad = (hi - lo) * 0.05; lo -= pad; hi += pad;
+    if (!opt.log && lo > 0 && lo < (hi - lo) * 0.6) lo = 0;
+    const pw = W - m.l - m.r, ph = H - m.t - m.b, gw = pw / G.length;
+    const Y = (v) => m.t + ph - ((tv(v) - lo) / (hi - lo)) * ph;
+    const yt = opt.log ? logTicks(Math.pow(10, lo), Math.pow(10, hi)) : niceTicks(lo, hi, 5);
+    let body = '<g class="grid">' + yt.map((v) => `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}"></line>`).join('') + '</g><g class="ax">';
+    body += yt.map((v) => `<text x="${m.l - 8}" y="${Y(v) + 4}" text-anchor="end">${compact(v)}</text>`).join('');
+    body += `<line x1="${m.l}" x2="${W - m.r}" y1="${m.t + ph}" y2="${m.t + ph}"></line></g>`;
+    const tilt = gw < 78, pts = [];
+    G.forEach((g, gi) => {
+      const cx = m.l + gw * gi + gw / 2, span = Math.min(gw * 0.3, 26);
+      const vals = g.values.filter((x) => Number.isFinite(x.v) && (!opt.log || x.v > 0));
+      vals.forEach((x, j) => {
+        const jit = vals.length > 1 ? (((j * 7919) % 97) / 96 - 0.5) * 2 * span : 0;
+        pts.push(x);
+        body += `<circle class="${opt.byOrigin && x.m ? 'ring-1' : 'dot-1'}" cx="${(cx + jit).toFixed(1)}" cy="${Y(x.v).toFixed(1)}" r="4.5" data-tip="${pts.length - 1}"></circle>`;
+      });
+      if (opt.median && vals.length) {
+        const s = vals.map((x) => tv(x.v)).sort((a, b) => a - b), med = quantile(s, 0.5), my = m.t + ph - ((med - lo) / (hi - lo)) * ph;
+        body += `<line class="median" x1="${cx - Math.min(gw * 0.38, 34)}" x2="${cx + Math.min(gw * 0.38, 34)}" y1="${my}" y2="${my}" stroke-linecap="round"></line>`;
+      }
+      const label = g.label.length > 16 ? g.label.slice(0, 15) + '…' : g.label;
+      body += tilt
+        ? `<g class="bar-g grp-lbl" data-key="${esc(g.key)}"><text class="cat-text" transform="translate(${cx + 4} ${m.t + ph + 12}) rotate(-35)" text-anchor="end">${esc(label)}</text></g>`
+        : `<g class="bar-g grp-lbl" data-key="${esc(g.key)}"><text class="cat-text" x="${cx}" y="${m.t + ph + 18}" text-anchor="middle">${esc(label)}</text><text class="lbl-text" x="${cx}" y="${m.t + ph + 33}" text-anchor="middle">${esc(g.sub || '')}</text></g>`;
+    });
+    if (opt.yLabel) body += `<text class="ax-title" transform="translate(13 ${m.t + ph / 2}) rotate(-90)" text-anchor="middle">${esc(opt.yLabel)}</text>`;
+    const { tip } = mount(el, W, H, body);
+    el._csv = [['group', 'value', 'data_origin'], ...G.flatMap((g) => g.values.map((x) => [g.label, x.v, x.m ? 'model-derived' : 'author-reported']))];
+    bindTips(el, tip, (i) => pts[+i].tip);
+    if (opt.onClick) el.querySelector('svg').addEventListener('click', (e) => { const g = e.target.closest('.grp-lbl'); if (g) opt.onClick(g.dataset.key); });
+  }
+
+  /** 下载图：kind svg / png / csv；把计算后的颜色、字号写进副本，离开网页样式也能正常显示 */
+  const STYLE_PROPS = ['fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-opacity', 'stroke-linecap', 'opacity', 'font-size', 'font-family', 'font-weight'];
+  function svgString(el) {
+    const src = el.querySelector('svg');
+    if (!src) return null;
+    const copy = src.cloneNode(true), a = src.querySelectorAll('*'), b = copy.querySelectorAll('*');
+    a.forEach((n, k) => { const cs = getComputedStyle(n); b[k].setAttribute('style', STYLE_PROPS.map((p) => `${p}:${cs.getPropertyValue(p)}`).join(';')); b[k].removeAttribute('class'); b[k].removeAttribute('data-tip'); });
+    copy.querySelectorAll('rect[style*="fill:transparent"], rect[style*="fill: transparent"]').forEach((r) => r.remove());
+    const vb = src.viewBox.baseVal, bg = getComputedStyle(document.body).getPropertyValue('--surface').trim() || '#fff';
+    copy.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    copy.insertAdjacentHTML('afterbegin', `<rect x="0" y="0" width="${vb.width}" height="${vb.height}" fill="${bg}"></rect>`);
+    return { text: new XMLSerializer().serializeToString(copy), w: vb.width, h: vb.height };
+  }
+  function save(el, kind, name, csvText) {
+    const dl = (blob, fn) => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fn; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500); };
+    if (kind === 'csv') { if (el._csv) dl(new Blob([csvText(el._csv)], { type: 'text/csv;charset=utf-8' }), name + '.csv'); return; }
+    const s = svgString(el);
+    if (!s) return;
+    if (kind === 'svg') { dl(new Blob([s.text], { type: 'image/svg+xml' }), name + '.svg'); return; }
+    const img = new Image(), scale = 2;
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = s.w * scale; c.height = s.h * scale;
+      const g = c.getContext('2d');
+      g.scale(scale, scale); g.drawImage(img, 0, 0, s.w, s.h);
+      c.toBlob((blob) => dl(blob, name + '.png'), 'image/png');
+    };
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s.text);
+  }
+
+  window.PFDCharts = { hbar, histogram, boxplot, scatter, strip, save, fmt, compact, quantile };
 })();

@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 r"""
-build_site_data.py —— 数据库 CSV → 网站数据（data/ 下按需加载的几种文件）+ 公开下载包（data/protein_db_csv.zip）
+build_site_data.py —— 数据库 CSV → 网站数据（data/ 下按需加载的几种文件）+ 公开下载（data/protein_db_csv.zip 全部，
+data/download/<表>.csv.zip 分表，data/download/manifest.json 行数、大小、SHA-256）
+
+网站名：PDF · Protein Database of Functionality（蛋白质功能特性数据库；用户 2026-11-02 定，原名 PFD）
 
     python scripts/build_site_data.py                       # 默认读 D:\protein_database（ACS + Elsevier 合成库）
     python scripts/build_site_data.py --db <数据库目录>
@@ -16,6 +19,8 @@ build_site_data.py —— 数据库 CSV → 网站数据（data/ 下按需加载
   data/index.bin.gz    筛选、计数、画图要用的列，二进制（每个数值十几个字节），打开网页时只下这两个
   data/search.json.gz  关键词要用的文字（输入关键词时才下）
   data/chunk/NNN.json.gz  按文章分块的详细内容（样品组成、处理步骤、数值原文写法、测试方法概述），翻到哪页下哪块
+
+版本号和更新内容写在 RELEASES 里（发新版时加一条）；网页首页、更新日志页、下载页都从这里读。
 """
 import argparse
 import csv
@@ -49,6 +54,15 @@ CHUNK_VALUES = 8000                     # 每块大约多少个数值（gzip 后
 TCAT_BITS = {'物理法': 1, '化学法': 2, '生物法': 4, '复合法': 8, '其他': 16}
 UNTREATED_BIT = 32
 METHOD_NONE, METHOD_NOT_STATED, METHOD_UNCLEAR = 0, 1, 2      # 数值的测试方法编码：0 = 这篇没提取方法
+PAR_COLS = ((1, 'time_min'), (2, 'ph'), (3, 'pressure_mpa'), (4, 'power_w'), (5, 'frequency_khz'))   # 处理参数（温度另有 stemp）
+RELEASES = [                                   # 用户 2026-11-02 定：这一版是 1.0（之前的内部版本不单列）
+    {'version': '1.0', 'date': '2026-11-02',
+     'zh': '首次正式发布：ACS 期刊 2,338 篇论文、18,936 个样品、96,952 个数值；蛋白来源、蛋白形态、处理类型和单位规范化，'
+           '测试方法英文名和方法概述；分页签检索、高级查询、批量检索、处理参数筛选；数据篮、下载中心、统计、浏览、性质分布页和帮助。',
+     'en': 'First public release: 2,338 papers from ACS journals, 18,936 samples and 96,952 values; normalised protein sources, '
+           'forms, treatment types and units, English test-method names and method summaries; tabbed search, query builder, batch '
+           'search and treatment-parameter filters; data basket, download centre, statistics, browse, property pages and help.'},
+]
 
 
 def read(db, name):
@@ -63,6 +77,11 @@ def num(s):
     except (TypeError, ValueError):
         return None
     return x if math.isfinite(x) else None
+
+
+def num_approx(s):
+    """处理参数：「∼6.5」「~30」这种约数也认。"""
+    return num(re.sub(r'^\s*[~∼≈]\s*', '', s or ''))
 
 
 def public_csv(cols, rows):
@@ -131,7 +150,7 @@ def gz_json(obj):
     return gzip.compress(json.dumps(obj, ensure_ascii=False, separators=(',', ':')).encode('utf-8'), 9, mtime=0)
 
 
-def site_files(t):
+def site_files(t, built):
     """网页用的几种文件：{相对路径: 字节}，以及统计。"""
     papers, samples, ings, steps, vals = (t[k][1] for k in ('papers', 'samples', 'ingredients', 'treatments',
                                                             'measurements'))
@@ -158,14 +177,20 @@ def site_files(t):
         s_ing[s_index[r['sample_id']]].append([r['name'], r['category'], r['amount']])
     s_step = [[] for _ in samples]
     s_temp = [[] for _ in samples]
+    s_par = [[] for _ in samples]
     for r in steps:
         k = s_index[r['sample_id']]
         s_step[k].append([r['treatment_method'], r['category'], r.get('treatment_type', ''), r['params']])
         x = num(r['temperature_c'])
         if x is not None:
             s_temp[k].append(x)
-    sp, scat, ssys, sform, stcat = [], [], [], [], []
+        for code, col in PAR_COLS:
+            x = num_approx(r.get(col))
+            if x is not None:
+                s_par[k].append((code, x))
+    sp, scat, ssys, sform, stcat, sflag = [], [], [], [], [], []
     ssrc_off, ssrc, stt_off, stt, stemp_off, stemp = [0], [], [0], [], [0], []
+    spar_off, spar_k, spar_v = [0], [], []
     for k, r in enumerate(samples):
         sp.append(p_index[r['doi']])
         scat.append(pcat.id(r['protein_category'] or '不明'))
@@ -181,10 +206,14 @@ def site_files(t):
         stcat.append(bits or UNTREATED_BIT)
         stemp += s_temp[k]
         stemp_off.append(len(stemp))
+        spar_k += [c for c, _ in s_par[k]]
+        spar_v += [x for _, x in s_par[k]]
+        spar_off.append(len(spar_k))
+        sflag.append(1 if s_ing[k] else 0)            # 第 0 位：有复配物（不是纯蛋白样品）
     pj = [journals.id(r['journal'] or '') for r in papers]
 
     # ---- 数值
-    vs, vp, vv, vstd, vu, vm, vo, vph = [], [], [], [], [], [], [], []
+    vs, vp, vv, vstd, vu, vm, vo, vph, vflag = [], [], [], [], [], [], [], [], []
     names = Vocab()
     vname = []
     p_code = {c: i for i, c in enumerate(PROPS)}
@@ -199,6 +228,7 @@ def site_files(t):
                   METHOD_NOT_STATED if st.startswith('原文未写明') else METHOD_UNCLEAR if st else METHOD_NONE)
         vo.append((1 if r['source_type'] in MODEL_SOURCES else 0))
         vph.append(one_ph(r.get('cond_ph')))
+        vflag.append(1 if (r.get('sd') or '').strip() else 0)       # 第 0 位：有 SD
         vname.append(names.id(r['measure_name'].lower()))
 
     b = Bin()
@@ -207,7 +237,9 @@ def site_files(t):
                             ('sp', 'u32', sp), ('scat', 'u8', scat), ('ssys', 'u8', ssys), ('sform', 'u8', sform),
                             ('stcat', 'u8', stcat), ('ssrc_off', 'u32', ssrc_off), ('ssrc', 'u16', ssrc),
                             ('stt_off', 'u32', stt_off), ('stt', 'u16', stt), ('stemp_off', 'u32', stemp_off),
-                            ('stemp', 'f32', stemp), ('pj', 'u16', pj)):
+                            ('stemp', 'f32', stemp), ('pj', 'u16', pj), ('spar_off', 'u32', spar_off),
+                            ('spar_k', 'u8', spar_k), ('spar_v', 'f32', spar_v), ('sflag', 'u8', sflag),
+                            ('vflag', 'u8', vflag)):
         b.add(name, kind, col)
 
     # ---- 分块：按文章切，一篇的样品、数值、方法都在同一块
@@ -267,7 +299,8 @@ def site_files(t):
     binary = gzip.compress(bytes(b.buf), 9, mtime=0)
     files['index.bin.gz'] = binary
     index = {
-        'meta': {'version': 2, 'built': time.strftime('%Y-%m-%d'), 'papers': nP, 'samples': nS, 'values': nV,
+        'meta': {'version': 3, 'built': built, 'release': RELEASES[-1], 'releases': RELEASES[::-1],
+                 'papers': nP, 'samples': nS, 'values': nV,
                  'methods': len(methods), 'props': PROPS, 'bin': hashlib.sha1(binary).hexdigest()[:10],
                  'search': hashlib.sha1(search).hexdigest()[:10], 'cols': b.cols, 'chunks': chunks,
                  'tcat_bits': TCAT_BITS, 'untreated_bit': UNTREATED_BIT},
@@ -280,7 +313,7 @@ def site_files(t):
 
 
 def stamp_versions():
-    """index.html 里引用的 style.css、app.js 和数据加上版本号（文件内容的哈希）：文件一变地址就变，
+    """index.html 里引用的 assets/ 下的 css、js 和数据加上版本号（文件内容的哈希）：文件一变地址就变，
     浏览器不会一直用旧缓存（2026-10-19 用户的浏览器按 Ctrl+F5 也一直显示旧版）。改了网页文件后跑一次本脚本就会更新。"""
     def h(rel):
         with open(os.path.join(ROOT, rel), 'rb') as fh:
@@ -288,9 +321,9 @@ def stamp_versions():
     path = os.path.join(ROOT, 'index.html')
     with io.open(path, encoding='utf-8') as fh:
         html = fh.read()
-    for rel in ('assets/style.css', 'assets/app.js', 'assets/charts.js', 'assets/xlsx.js'):
-        if os.path.exists(os.path.join(ROOT, rel)):
-            html = re.sub(r'%s(\?v=[0-9a-f]*)?"' % re.escape(rel), '%s?v=%s"' % (rel, h(rel)), html)
+    html = re.sub(r'(assets/[\w.-]+\.(?:js|css))(\?v=[0-9a-f]*)?"',
+                  lambda m: '%s?v=%s"' % (m.group(1), h(m.group(1))) if os.path.exists(os.path.join(ROOT, m.group(1)))
+                  else m.group(0), html)
     html = re.sub(r'<meta name="data-version" content="[^"]*">',
                   '<meta name="data-version" content="%s">' % h('data/index.json.gz'), html)
     with io.open(path, 'w', encoding='utf-8', newline='\n') as fh:
@@ -303,7 +336,9 @@ def main(argv=None):
     args = ap.parse_args(argv)
     t = {name: read(args.db, name) for name in TABLES
          if name not in OPTIONAL or os.path.exists(os.path.join(args.db, name + '.csv'))}
-    files, n_chunks = site_files(t)
+    # 「数据更新」写数据库文件的日期（只改网页、重跑本脚本时不变）
+    built = time.strftime('%Y-%m-%d', time.localtime(max(os.path.getmtime(os.path.join(args.db, n + '.csv')) for n in t)))
+    files, n_chunks = site_files(t, built)
     os.makedirs(OUT, exist_ok=True)
     tmp = os.path.join(OUT, '.new')
     if os.path.exists(tmp):
@@ -324,15 +359,42 @@ def main(argv=None):
     old = os.path.join(OUT, 'db.json.gz')
     if os.path.exists(old):
         os.remove(old)
+    # ---- 下载：全部一个 zip + 每张表一个 zip；zip 里的时间固定成数据日期，数据不变时重跑文件也不变
+    stamp = tuple(int(x) for x in built.split('-')) + (0, 0, 0)
+    docs = {}
+    for doc in ('README.md', 'LICENSE-DATA.md'):              # 说明和数据许可（CC BY 4.0）跟着下载包走
+        if os.path.exists(os.path.join(ROOT, doc)):
+            with open(os.path.join(ROOT, doc), 'rb') as fh:
+                docs[doc] = fh.read()
+
+    def write_zip(path, members):
+        with zipfile.ZipFile(path + '.tmp', 'w') as z:
+            for name, data in members:
+                info = zipfile.ZipInfo(name, stamp)
+                info.compress_type = zipfile.ZIP_DEFLATED
+                info.external_attr = 0o644 << 16
+                z.writestr(info, data, compresslevel=9)
+        os.replace(path + '.tmp', path)
+        with open(path, 'rb') as fh:
+            data = fh.read()
+        return {'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()}
+
+    csvs = {name: public_csv(*t[name]).encode('utf-8') for name in TABLES if name in t}
     zpath = os.path.join(OUT, 'protein_db_csv.zip')
-    with zipfile.ZipFile(zpath + '.tmp', 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as z:
-        for name in TABLES:
-            if name in t:
-                z.writestr(name + '.csv', public_csv(*t[name]).encode('utf-8'))
-        for doc in ('README.md', 'LICENSE-DATA.md'):          # 说明和数据许可（CC BY 4.0）跟着下载包走
-            if os.path.exists(os.path.join(ROOT, doc)):
-                z.write(os.path.join(ROOT, doc), doc)
-    os.replace(zpath + '.tmp', zpath)
+    manifest = {'release': RELEASES[-1], 'built': built, 'files': []}
+    manifest['all'] = dict(path='data/protein_db_csv.zip',
+                           **write_zip(zpath, [(n + '.csv', d) for n, d in csvs.items()] + list(docs.items())))
+    dl = os.path.join(OUT, 'download')
+    os.makedirs(dl, exist_ok=True)
+    for name, data in csvs.items():
+        info = write_zip(os.path.join(dl, name + '.csv.zip'),
+                         [(name + '.csv', data)] + [(k, v) for k, v in docs.items() if k == 'LICENSE-DATA.md'])
+        cols = t[name][0]
+        n_cols = len([c for c in cols if c not in PRIVATE_COLS]) + (1 if 'model_estimated' in cols else 0)
+        manifest['files'].append(dict(table=name, path='data/download/%s.csv.zip' % name, rows=len(t[name][1]),
+                                      cols=n_cols, csv_bytes=len(data), **info))
+    with io.open(os.path.join(dl, 'manifest.json'), 'w', encoding='utf-8', newline='\n') as fh:
+        json.dump(manifest, fh, ensure_ascii=False, indent=1)
     stamp_versions()
     size = lambda rel: len(files[rel]) / 1e6
     print('网站数据：打开时下载 %.1f MB（index %.2f + bin %.2f），关键词 %.1f MB，%d 块详细内容共 %.1f MB；'

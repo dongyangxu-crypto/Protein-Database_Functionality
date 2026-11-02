@@ -1,4 +1,4 @@
-# PFD · Protein Functionality Database（蛋白质功能特性数据库）
+# PDF · Protein Database of Functionality（蛋白质功能特性数据库）
 
 可搜索的食品蛋白质功能特性数据库：从已发表论文中提取的 17 项功能特性数值，每个数值都对应到具体样品（蛋白来源、组成、复配物）、样品处理（方法、温度、时间、pH…）和测试方法（例如溶解度用 Bradford 法、粒径用动态光散射）。
 
@@ -8,7 +8,7 @@ A searchable database of food protein functional properties. Every value is link
 
 ## 内容 / Contents
 
-| | 数量 Count（2026-10-27） |
+| | 数量 Count（版本 1.0，数据 2026-10-27） |
 |---|---|
 | 论文 Papers | 2,338 |
 | 样品 Samples | 18,936 |
@@ -18,6 +18,14 @@ A searchable database of food protein functional properties. Every value is link
 17 项功能特性 / 17 properties：溶解度 solubility、乳化性 emulsifying、起泡性 foaming、凝胶性 gelling、持水性 water-holding、持油性 oil-holding、粒径 particle size、ζ-电位 ζ-potential、PDI、巯基含量 sulfhydryl、二硫键含量 disulfide bonds、表面疏水性 surface hydrophobicity、浊度 turbidity、水解度 degree of hydrolysis、游离氨基含量 free amino groups、包埋率/负载率 encapsulation/loading efficiency、抗氧化活性 antioxidant activity。
 
 目前收录的是 ACS 期刊（主要是 *Journal of Agricultural and Food Chemistry*、*ACS Food Science & Technology*）的论文，其他出版商的数据会陆续加入。/ Currently covers ACS journals (mainly *J. Agric. Food Chem.* and *ACS Food Sci. Technol.*); other publishers will be added.
+
+## 网站功能 / Features
+
+- **检索 / Search**：一个检索框认蛋白来源、处理方式、性质、测试方法、期刊和 DOI，边输边提示；分页签筛选（性质与数值、蛋白、样品处理、测试方法、文献），每个选项带计数；处理温度、时间、pH、压力、功率、频率范围；只看有 SD 的数值、只看纯蛋白样品；批量检索（粘贴一列 DOI 或样品名）；高级查询（条件之间 AND / OR / NOT，可复制链接、保存）；结果按数值、样品或论文显示；没有结果时提示去掉哪个条件。/ One search box with suggestions for protein sources, treatments, properties, test methods, journals and DOIs; tabbed filters with counts; treatment-parameter ranges; SD-only and pure-protein filters; batch search; query builder (AND / OR / NOT); results per value, sample or paper; suggestions when nothing matches.
+- **浏览、统计、性质分布页 / Browse, statistics, property pages**：按性质、蛋白来源、处理类型、测试方法、期刊浏览；全库分布图；某性质 × 某蛋白 × 某处理的数值按论文分列画图，附方法概述、处理条件和数值表。
+- **下载 / Download**：全部数据一个包，或按表分别下载，附行数、大小和 SHA-256；检索结果导出 CSV / TSV / Excel / JSON（全部结果、当前页或勾选的行，长表或宽表，可自选列）；文献列表导出 RIS / BibTeX / 纯文本；每张图可下载 PNG / SVG / 数据 CSV。
+- **数据篮 / Basket**：跨多次检索收集样品（存在浏览器里），对比 2–6 个样品，或一起导出。
+- 中英双语、深色模式、手机可用；筛选条件写进网址，可以收藏和分享。/ Chinese / English, dark mode, mobile layout; filters are kept in the URL.
 
 ## 数据来源和注意事项 / Data origin and caveats
 
@@ -32,7 +40,8 @@ A searchable database of food protein functional properties. Every value is link
 
 ## 下载 / Download
 
-[`data/protein_db_csv.zip`](data/protein_db_csv.zip)：全部数据，UTF-8 CSV（Excel 可直接打开）/ all data as UTF-8 CSV files.
+[`data/protein_db_csv.zip`](data/protein_db_csv.zip)：全部数据，UTF-8 CSV（Excel 可直接打开）/ all data as UTF-8 CSV files。
+每张表也可以单独下载：`data/download/<表名>.csv.zip`；行数、大小和 SHA-256 见 [`data/download/manifest.json`](data/download/manifest.json)。/ Each table is also available on its own in `data/download/`, with row counts, sizes and SHA-256 checksums in `manifest.json`.
 
 | 文件 File | 一行是 One row per | 主要的列 Key columns |
 |---|---|---|
@@ -56,15 +65,15 @@ A searchable database of food protein functional properties. Every value is link
 
 ## 更新数据 / Updating
 
-数据库由项目内部的提取流程生成；网站数据由 `scripts/build_site_data.py` 从数据库生成（去掉原文句子，读图值标注为来源于模型），然后提交推送：
-The database is produced by the project's extraction pipeline; `scripts/build_site_data.py` turns it into the website data (article text removed, figure-read values labelled model-derived):
+数据库由项目内部的提取流程生成；网站数据由 `scripts/build_site_data.py` 从数据库生成（去掉原文句子，读图值标注为来源于模型），然后提交推送。发新版时在脚本里的 `RELEASES` 加一条（版本号、日期、中英文说明），首页、更新日志和下载页都会显示。
+The database is produced by the project's extraction pipeline; `scripts/build_site_data.py` turns it into the website data (article text removed, figure-read values labelled model-derived). For a new release, add an entry to `RELEASES` in the script.
 
 ```
 python scripts/build_site_data.py --db <数据库目录 database folder>
 git add -A && git commit -m "Update data" && git push
 ```
 
-网站是纯静态页面（`index.html` + `assets/`），数据按需加载（`data/index.*` 打开时下载，`data/chunk/` 按需下载），在浏览器里筛选、画图、导出，不需要服务器。本地预览：`python scripts/serve.py`，然后打开 http://localhost:8765。
+网站是纯静态页面（`index.html` + `assets/`：`i18n.js` 文字、`core.js` 数据与筛选、`search.js` 检索页、`pages.js` 其余页面、`main.js` 路由、`charts.js` 图、`xlsx.js` Excel 导出），数据按需加载（`data/index.*` 打开时下载，`data/chunk/` 按需下载），在浏览器里筛选、画图、导出，不需要服务器。本地预览：`python scripts/serve.py`，然后打开 http://localhost:8765。
 The website is fully static (`index.html` + `assets/`); data are loaded on demand (`data/index.*` on open, `data/chunk/` as needed) and filtered, plotted and exported in the browser. Local preview: `python scripts/serve.py`, then open http://localhost:8765.
 
 ## 许可 / License
