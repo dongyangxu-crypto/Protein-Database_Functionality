@@ -5,7 +5,7 @@
   "zh": "首次正式发布：ACS 期刊 2,338 篇论文、18,936 个样品、96,952 个数值；蛋白来源、蛋白形态、处理类型和单位规范化，测试方法英文名和方法概述；分页签检索、高级查询、批量检索、处理参数筛选；数据篮、下载中心、统计、浏览、性质分布页和帮助。",
   "en": "First public release: 2,338 papers from ACS journals, 18,936 samples and 96,952 values; normalised protein sources, forms, treatment types and units, English test-method names and method summaries; tabbed search, query builder, batch search and treatment-parameter filters; data basket, download centre, statistics, browse, property pages and help."
  },
- "built": "2026-10-27",
+ "built": "2026-11-02",
  "files": [
   {
    "table": "papers",
@@ -14,16 +14,16 @@
    "cols": 11,
    "csv_bytes": 608931,
    "bytes": 142022,
-   "sha256": "df637d35fda69d417f6b75a3dc2c6b3341d71ee3171668c472fe7eed2a6bbd30"
+   "sha256": "46b7257744766d892cd96e7020f8438e50bd163b914b55b6e9665d706767f57a"
   },
   {
    "table": "samples",
    "path": "data/download/samples.csv.zip",
    "rows": 18936,
    "cols": 20,
-   "csv_bytes": 10718396,
-   "bytes": 1134618,
-   "sha256": "6ac22799a9bfb476eb81fbf095aa8c3634256006fca31f562bfde15b68c6046e"
+   "csv_bytes": 10718385,
+   "bytes": 1134528,
+   "sha256": "8c151946dae4dfbadf172bec6a2e85cffef9293e0acbeb002214d27f3f1c97fd"
   },
   {
    "table": "ingredients",
@@ -32,34 +32,34 @@
    "cols": 6,
    "csv_bytes": 1792485,
    "bytes": 152632,
-   "sha256": "6ac93924a671915899e21fcb9dfed34e5c2fd042aa4834e93ccf4cf2d111e422"
+   "sha256": "3468eacddef9383cfaa681cdb223bfa59799f760bad3f5fb07bcdd18bf3146a9"
   },
   {
    "table": "treatments",
    "path": "data/download/treatments.csv.zip",
    "rows": 44807,
    "cols": 23,
-   "csv_bytes": 8254552,
-   "bytes": 570898,
-   "sha256": "31f241d7a69d509cc25a76f984e58e658900481e159deb367a67de53e3f55b5a"
+   "csv_bytes": 8254530,
+   "bytes": 570809,
+   "sha256": "10da71c97c36168a18bf5ef0aa8ccd686dbba5d9520e0838dadbeec0be0fce3e"
   },
   {
    "table": "treatment_params",
    "path": "data/download/treatment_params.csv.zip",
    "rows": 91832,
    "cols": 7,
-   "csv_bytes": 6201049,
-   "bytes": 452985,
-   "sha256": "352f95880ad0e2fe313ef23c5811dfbb87190484b920a293b8de342cb6641786"
+   "csv_bytes": 6201038,
+   "bytes": 452941,
+   "sha256": "d870afe9c9c33632e0ce9cb7223d2d1894e8df0a967dec79fde56c3da02cf903"
   },
   {
    "table": "measurements",
    "path": "data/download/measurements.csv.zip",
    "rows": 96952,
    "cols": 39,
-   "csv_bytes": 48868038,
-   "bytes": 3169772,
-   "sha256": "5842cef8ee70d1bbbe45b04c495d72b73d022b6168d3aedbdd3b338fef320703"
+   "csv_bytes": 48867066,
+   "bytes": 3169415,
+   "sha256": "4faa3c357c8fa7aed1498f6428876eacfaf5bfc5ff5cc9d883859d7551fd013e"
   },
   {
    "table": "measurement_conditions",
@@ -67,31 +67,31 @@
    "rows": 189976,
    "cols": 7,
    "csv_bytes": 17268335,
-   "bytes": 869845,
-   "sha256": "bb30e796b76a03ab199cc6de55d0ec07f57da83675c8cb9017efbb75d063bef4"
+   "bytes": 869844,
+   "sha256": "8da58228c2e00d9cc27a3afc10c92810cef1112f9970065ee6cfbf8fdcac767f"
   },
   {
    "table": "methods",
    "path": "data/download/methods.csv.zip",
    "rows": 5213,
    "cols": 14,
-   "csv_bytes": 3039973,
-   "bytes": 596566,
-   "sha256": "1557719dd6d3901e42fb4461ddb005494f0c7f646fa74d4903d1ad10816f4556"
+   "csv_bytes": 3039869,
+   "bytes": 596035,
+   "sha256": "d6ec4d5a7d5b8c7784c415b3e67d65ce22138b54e849f4f2a9c11e75e3d06e0e"
   },
   {
    "table": "flat_measurements",
    "path": "data/download/flat_measurements.csv.zip",
    "rows": 96952,
    "cols": 61,
-   "csv_bytes": 112301329,
-   "bytes": 5025573,
-   "sha256": "0079bf362c62319fe4ad455dd75af5e7b64d29a036a144f907cd590bc95a146a"
+   "csv_bytes": 112300313,
+   "bytes": 5025130,
+   "sha256": "4d68adde397a2846447a311e9e5ecb9c803338f1cd27631574af27a166b97753"
   }
  ],
  "all": {
   "path": "data/protein_db_csv.zip",
-  "bytes": 12110538,
-  "sha256": "ba4f5916ea514d315a441b74ade1174fe19b3222a2824acd2a032f23e60f2f14"
+  "bytes": 12108983,
+  "sha256": "42cbcbe9bf2f4c790b305aaaf73b9a8eb7bd50ca5fd1c7976288528950499259"
  }
 }
