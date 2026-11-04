@@ -455,7 +455,7 @@
         <label class="lbl-inline"><input type="checkbox" id="c-log" ${UI.chartLog ? 'checked' : ''}> ${esc(t('c_log'))}</label>
         <label class="lbl-inline"><input type="checkbox" id="c-table" ${UI.chartTable ? 'checked' : ''}> ${esc(t('c_table'))}</label>
         <span class="lbl-inline" style="margin-left:auto">${esc(t('c_dl'))} ${A.chartDl('chart-box')}</span></div>
-      ${UI.chartType === 'scatter' ? `<div class="legend" style="padding-top:10px"><span><i style="background:var(--series-1)"></i>${esc(t('o_author'))}</span><span><i style="background:var(--series-2)"></i>${esc(t('o_model'))}</span></div>` : ''}
+      ${UI.chartType === 'scatter' ? `<div class="legend" style="padding-top:10px"><span><i style="background:var(--series-1)"></i>${esc(t('o_author'))}</span><span><i class="ring2"></i>${esc(t('o_model'))}</span></div>` : ''}
       <div class="chart-box" id="chart-box"></div><div class="chart-note" id="chart-note"></div><div id="chart-table"></div>`;
     const box = $('chart-box'), yLbl = `${A.propName(UI.chartProp)}${unitLbl ? ' (' + unitLbl + ')' : ''}`, total = pc.get(UI.chartProp);
     let table = null;

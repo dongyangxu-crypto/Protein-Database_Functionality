@@ -47,6 +47,22 @@
     return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
   }
 
+  // 量文字宽度（和图里 .cat-text 一样 12px、正文字体）；标签放不下时截断加省略号，悬停提示里是全名
+  let measure = null;
+  function textWidth(s, px = 12) {
+    if (!measure) measure = document.createElement('canvas').getContext('2d');
+    measure.font = `${px}px ${getComputedStyle(document.body).fontFamily}`;
+    return measure.measureText(String(s)).width;
+  }
+  function fitLabel(s, maxW) {
+    if (textWidth(s) <= maxW) return s;
+    let lo = 0, hi = s.length;
+    while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (textWidth(s.slice(0, mid) + '…') <= maxW) lo = mid; else hi = mid - 1; }
+    return s.slice(0, lo).trimEnd() + '…';
+  }
+  // 标签列宽：按最长的标签量（英文名比中文长），不超过图宽的 frac
+  const labelColumn = (labels, W, frac) => Math.max(60, Math.min(Math.max(0, ...labels.map((s) => textWidth(s))) + 16, W * frac));
+
   function mount(el, w, h, body) {
     el.innerHTML = `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img">${body}</svg><div class="tip" hidden></div>`;
     return { svg: el.querySelector('svg'), tip: el.querySelector('.tip') };
@@ -69,14 +85,14 @@
   /** 横向条形：items [{key, label, value, note?}]，按给的顺序画；点一下调用 onClick(key) */
   function hbar(el, items, opt = {}) {
     const W = Math.max(300, el.clientWidth || 600);
-    const labelW = Math.min(opt.labelWidth || 200, W * 0.42), valW = 56, band = 26, bar = 16, top = 4;
+    const labelW = labelColumn(items.map((d) => d.label), W, 0.45), valW = 56, band = 26, bar = 16, top = 4;
     const H = top + items.length * band + 4;
     const max = Math.max(1, ...items.map((d) => d.value));
     const span = W - labelW - valW - 8;
     let body = '';
     items.forEach((d, i) => {
       const y = top + i * band, w = Math.max(2, (d.value / max) * span);
-      const label = d.label.length > 34 ? d.label.slice(0, 33) + '…' : d.label;
+      const label = fitLabel(d.label, labelW - 10);
       body += `<g class="bar-g" data-key="${esc(d.key)}" data-tip="${i}">
         <rect class="hit" x="0" y="${y}" width="${W}" height="${band}"></rect>
         <text class="cat-text" x="${labelW - 8}" y="${y + band / 2 + 4}" text-anchor="end">${esc(label)}</text>
@@ -126,7 +142,7 @@
 
   /** 分组箱线图（横向）：groups [{key, label, values(已排序)}]，opt {log, xLabel, onClick, nFmt} */
   function boxplot(el, groups, opt = {}) {
-    const W = Math.max(320, el.clientWidth || 700), band = 30, m = { l: Math.min(210, W * 0.36), r: 70, t: 8, b: 40 };
+    const W = Math.max(320, el.clientWidth || 700), band = 30, m = { l: labelColumn(groups.map((g) => g.label), W, 0.36), r: 70, t: 8, b: 40 };
     const tx = opt.log ? Math.log10 : (v) => v;
     const gs = groups.map((g) => {
       const v = g.values.filter((x) => Number.isFinite(x) && (!opt.log || x > 0)).map(tx);
@@ -145,7 +161,7 @@
     body += xt.map((v) => `<text x="${X(v)}" y="${H - m.b + 16}" text-anchor="middle">${opt.log ? compact(Math.pow(10, v)) : compact(v)}</text>`).join('') + '</g>';
     gs.forEach((g, i) => {
       const y = m.t + i * band, cy = y + band / 2, bh = 14;
-      const label = g.label.length > 30 ? g.label.slice(0, 29) + '…' : g.label;
+      const label = fitLabel(g.label, m.l - 14);
       body += `<g class="bar-g" data-key="${esc(g.key)}" data-tip="${i}"><rect class="hit" x="0" y="${y}" width="${W}" height="${band}"></rect>
         <text class="cat-text" x="${m.l - 10}" y="${cy + 4}" text-anchor="end">${esc(label)}</text>
         <line class="box-line" x1="${X(g.lw)}" x2="${X(g.q1)}" y1="${cy}" y2="${cy}"></line>
@@ -183,7 +199,8 @@
     body += yt.map((v) => `<text x="${m.l - 8}" y="${Y(v) + 4}" text-anchor="end">${compact(v)}</text>`).join('');
     body += xt.filter((v) => v >= xlo && v <= xhi).map((v) => `<text x="${X(v)}" y="${H - m.b + 16}" text-anchor="middle">${compact(v)}</text>`).join('');
     body += `<line x1="${m.l}" x2="${W - m.r}" y1="${m.t + ph}" y2="${m.t + ph}"></line></g>`;
-    P.forEach((p, i) => { body += `<circle class="dot-${p.s ? 2 : 1}" cx="${X(p.x).toFixed(1)}" cy="${Y(p.y).toFixed(1)}" r="4" data-tip="${i}"></circle>`; });
+    // 来源于模型的点画空心圆：颜色之外再用形状区分（配色检查里蓝-青绿的 tritan 差距偏小）
+    P.forEach((p, i) => { body += `<circle class="${p.s ? 'ring-2' : 'dot-1'}" cx="${X(p.x).toFixed(1)}" cy="${Y(p.y).toFixed(1)}" r="4" data-tip="${i}"></circle>`; });
     if (opt.xLabel) body += `<text class="ax-title" x="${m.l + pw / 2}" y="${H - 6}" text-anchor="middle">${esc(opt.xLabel)}</text>`;
     if (opt.yLabel) body += `<text class="ax-title" transform="translate(13 ${m.t + ph / 2}) rotate(-90)" text-anchor="middle">${esc(opt.yLabel)}</text>`;
     const { tip } = mount(el, W, H, body);
