@@ -24,6 +24,7 @@ data/download/<表>.csv.zip 分表，data/download/manifest.json 行数、大小
 """
 import argparse
 import csv
+import sys
 import gzip
 import hashlib
 import io
@@ -62,13 +63,36 @@ RELEASES = [                                   # 用户 2026-11-02 定：这一�
      'en': 'First public release: 2,338 papers from ACS journals, 18,936 samples and 96,952 values; normalised protein sources, '
            'forms, treatment types and units, English test-method names and method summaries; tabbed search, query builder, batch '
            'search and treatment-parameter filters; data basket, download centre, statistics, browse, property pages and help.'},
+    {'version': '1.1', 'date': '2026-11-11',
+     'zh': '加入 Elsevier、Springer Nature、MDPI、牛津大学出版社、Taylor & Francis、英国皇家化学会（RSC）六家出版商，与 ACS 合计 110 种期刊的 '
+           '44,126 篇论文、344,515 个样品、1,714,457 个数值；下载改为每张表一个文件，平铺表按 17 项性质各一个文件。',
+     'en': 'Added Elsevier, Springer Nature, MDPI, Oxford University Press, Taylor & Francis and the Royal Society of Chemistry: '
+           'together with ACS, 44,126 papers from 110 journals, 344,515 samples and 1,714,457 values; downloads are now one file '
+           'per table, with the flat table split into one file per property.'},
 ]
 
 
-def read(db, name):
+def read(db, name, cols=None):
+    """一张表 → (列名, [行])；cols 给了就只留这几列（七家合库 168 万个数值，整表读进内存会撑爆，11-11）。
+    短字符串 intern，重复很多的编号、单位只存一份。"""
     with io.open(os.path.join(db, name + '.csv'), encoding='utf-8-sig', newline='') as fh:
-        r = csv.DictReader(fh)
-        return r.fieldnames, list(r)
+        r = csv.reader(fh)
+        head = next(r)
+        keep = [(i, c) for i, c in enumerate(head) if cols is None or c in cols]
+        rows = [{c: (sys.intern(row[i]) if len(row[i]) < 48 else row[i]) for i, c in keep} for row in r]
+    return head, rows
+
+
+# 网页要用的列（site_files 里用到的）；其余列只进下载文件，下载文件从数据库 CSV 边读边写
+MEM_COLS = {
+    'measurements': {'sample_id', 'doi', 'property', 'value', 'value_std', 'unit_std', 'unit', 'method_id', 'method_status',
+                     'source_type', 'cond_ph', 'sd', 'measure_name', 'value_text', 'multiplier', 'err_low', 'err_high',
+                     'significance', 'conditions_all', 'method_params', 'source_item', 'source_panel', 'series', 'x',
+                     'x_unit', 'x_variable'},
+    'treatments': {'sample_id', 'treatment_method', 'category', 'treatment_type', 'params', 'temperature_c', 'time_min', 'ph',
+                   'pressure_mpa', 'power_w', 'frequency_khz'},
+}
+MEM_TABLES = ('papers', 'samples', 'ingredients', 'treatments', 'measurements', 'methods')
 
 
 def num(s):
@@ -82,21 +106,6 @@ def num(s):
 def num_approx(s):
     """处理参数：「∼6.5」「~30」这种约数也认。"""
     return num(re.sub(r'^\s*[~∼≈]\s*', '', s or ''))
-
-
-def public_csv(cols, rows):
-    """去掉不公开的列；有 model_estimated 的表换成 data_origin。返回 CSV 文本（UTF-8 带 BOM，Excel 直接打开）。"""
-    keep = [c for c in cols if c not in PRIVATE_COLS]
-    if 'model_estimated' in cols:
-        keep.insert(keep.index('source_type') + 1, 'data_origin')
-    buf = io.StringIO()
-    w = csv.writer(buf, lineterminator='\n')
-    w.writerow(keep)
-    for r in rows:
-        if 'model_estimated' in cols:
-            r = dict(r, data_origin=ORIGIN_MODEL if r['model_estimated'] == '是' else ORIGIN_AUTHOR)
-        w.writerow([r[c] for c in keep])
-    return '\ufeff' + buf.getvalue()
 
 
 class Vocab:
@@ -330,15 +339,105 @@ def stamp_versions():
         fh.write(html)
 
 
+def public_cols(head):
+    keep = [c for c in head if c not in PRIVATE_COLS]
+    if 'model_estimated' in head:
+        keep.insert(keep.index('source_type') + 1, 'data_origin')
+    return keep
+
+
+class ZipCSV:
+    """往一个 zip 里流式写一个 CSV（UTF-8 带 BOM，Excel 直接打开）；zip 里的时间固定成数据日期，数据不变时重跑文件也不变。"""
+    def __init__(self, path, entry, head, stamp, docs):
+        self.path, self.n, self.stamp, self.docs = path, 0, stamp, docs
+        self.z = zipfile.ZipFile(path + '.tmp', 'w')
+        self.raw = self.z.open(self.info(entry), 'w', force_zip64=True)
+        self.txt = io.TextIOWrapper(self.raw, encoding='utf-8', newline='')
+        self.txt.write('\ufeff')
+        self.w = csv.writer(self.txt, lineterminator='\n')
+        self.w.writerow(head)
+
+    def info(self, name):
+        info = zipfile.ZipInfo(name, self.stamp)
+        info.compress_type = zipfile.ZIP_DEFLATED
+        info.external_attr = 0o644 << 16
+        return info
+
+    def row(self, values):
+        self.w.writerow(values)
+        self.n += 1
+
+    def close(self):
+        self.txt.flush()
+        self.txt.detach()
+        self.raw.close()
+        for name, data in self.docs.items():                 # 说明和数据许可（CC BY 4.0）跟着每个下载文件走
+            self.z.writestr(self.info(name), data)
+        self.z.close()
+        os.replace(self.path + '.tmp', self.path)
+        h = hashlib.sha256()
+        with open(self.path, 'rb') as fh:
+            for block in iter(lambda: fh.read(1 << 20), b''):
+                h.update(block)
+        return {'rows': self.n, 'bytes': os.path.getsize(self.path), 'sha256': h.hexdigest()}
+
+
+def write_downloads(db, built, docs):
+    """下载文件（11-11 七家合库后改）：每张表一个 zip；平铺表不再整张给，按 17 项性质各一个 zip（每个都在 GitHub 单文件
+    100 MB 以内，最大的也只有二十几万行，Excel 打得开）。都从数据库 CSV 边读边写，不进内存。"""
+    stamp = tuple(int(x) for x in built.split('-')) + (0, 0, 0)
+    dl = os.path.join(OUT, 'download')
+    os.makedirs(dl, exist_ok=True)
+    files, props = [], []
+    for name in TABLES:
+        src = os.path.join(db, name + '.csv')
+        if name == 'flat_measurements' or not os.path.exists(src):
+            continue
+        with io.open(src, encoding='utf-8-sig', newline='') as fh:
+            r = csv.reader(fh)
+            head = next(r)
+            keep = public_cols(head)
+            idx = {c: i for i, c in enumerate(head)}
+            me = idx.get('model_estimated')
+            z = ZipCSV(os.path.join(dl, name + '.csv.zip'), name + '.csv', keep, stamp, docs)
+            for row in r:
+                z.row([(ORIGIN_MODEL if row[me] == '是' else ORIGIN_AUTHOR) if c == 'data_origin' else row[idx[c]] for c in keep])
+            files.append(dict(table=name, path='data/download/%s.csv.zip' % name, cols=len(keep), **z.close()))
+    src = os.path.join(db, 'flat_measurements.csv')
+    if os.path.exists(src):
+        with io.open(src, encoding='utf-8-sig', newline='') as fh:
+            r = csv.reader(fh)
+            head = next(r)
+            keep = public_cols(head)
+            idx = {c: i for i, c in enumerate(head)}
+            me, ip = idx.get('model_estimated'), idx['property']
+            writers = {}
+            for row in r:
+                prop = row[ip]
+                if prop not in writers:
+                    writers[prop] = ZipCSV(os.path.join(dl, 'flat_%s.csv.zip' % prop), 'flat_%s.csv' % prop, keep, stamp, docs)
+                writers[prop].row([(ORIGIN_MODEL if row[me] == '是' else ORIGIN_AUTHOR) if c == 'data_origin' else row[idx[c]]
+                                   for c in keep])
+        for prop in sorted(writers, key=lambda x: PROPS.index(x) if x in PROPS else 99):
+            props.append(dict(property=prop, path='data/download/flat_%s.csv.zip' % prop, cols=len(keep), **writers[prop].close()))
+    for old in (os.path.join(OUT, 'protein_db_csv.zip'), os.path.join(dl, 'flat_measurements.csv.zip')):
+        if os.path.exists(old):                               # 以前的「全部数据」总包和整张平铺表，七家合库后太大，不再出
+            os.remove(old)
+    return files, props
+
+
 def main(argv=None):
-    ap = argparse.ArgumentParser(description='数据库 CSV → 网站数据 + 公开下载包')
+    ap = argparse.ArgumentParser(description='数据库 CSV → 网站数据 + 公开下载文件')
     ap.add_argument('--db', default=DB_DIR, help='数据库目录，默认 %s' % DB_DIR)
     args = ap.parse_args(argv)
-    t = {name: read(args.db, name) for name in TABLES
+    t = {name: read(args.db, name, MEM_COLS.get(name)) for name in MEM_TABLES
          if name not in OPTIONAL or os.path.exists(os.path.join(args.db, name + '.csv'))}
     # 「数据更新」写数据库文件的日期（只改网页、重跑本脚本时不变）
-    built = time.strftime('%Y-%m-%d', time.localtime(max(os.path.getmtime(os.path.join(args.db, n + '.csv')) for n in t)))
+    built = time.strftime('%Y-%m-%d', time.localtime(max(os.path.getmtime(os.path.join(args.db, n + '.csv'))
+                                                         for n in TABLES if os.path.exists(os.path.join(args.db, n + '.csv')))))
     files, n_chunks = site_files(t, built)
+    n_papers, n_samples, n_values = len(t['papers'][1]), len(t['samples'][1]), len(t['measurements'][1])
+    del t
     os.makedirs(OUT, exist_ok=True)
     tmp = os.path.join(OUT, '.new')
     if os.path.exists(tmp):
@@ -359,49 +458,23 @@ def main(argv=None):
     old = os.path.join(OUT, 'db.json.gz')
     if os.path.exists(old):
         os.remove(old)
-    # ---- 下载：全部一个 zip + 每张表一个 zip；zip 里的时间固定成数据日期，数据不变时重跑文件也不变
-    stamp = tuple(int(x) for x in built.split('-')) + (0, 0, 0)
     docs = {}
-    for doc in ('README.md', 'LICENSE-DATA.md'):              # 说明和数据许可（CC BY 4.0）跟着下载包走
+    for doc in ('README.md', 'LICENSE-DATA.md'):
         if os.path.exists(os.path.join(ROOT, doc)):
             with open(os.path.join(ROOT, doc), 'rb') as fh:
                 docs[doc] = fh.read()
-
-    def write_zip(path, members):
-        with zipfile.ZipFile(path + '.tmp', 'w') as z:
-            for name, data in members:
-                info = zipfile.ZipInfo(name, stamp)
-                info.compress_type = zipfile.ZIP_DEFLATED
-                info.external_attr = 0o644 << 16
-                z.writestr(info, data, compresslevel=9)
-        os.replace(path + '.tmp', path)
-        with open(path, 'rb') as fh:
-            data = fh.read()
-        return {'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()}
-
-    csvs = {name: public_csv(*t[name]).encode('utf-8') for name in TABLES if name in t}
-    zpath = os.path.join(OUT, 'protein_db_csv.zip')
-    manifest = {'release': RELEASES[-1], 'built': built, 'files': []}
-    manifest['all'] = dict(path='data/protein_db_csv.zip',
-                           **write_zip(zpath, [(n + '.csv', d) for n, d in csvs.items()] + list(docs.items())))
-    dl = os.path.join(OUT, 'download')
-    os.makedirs(dl, exist_ok=True)
-    for name, data in csvs.items():
-        info = write_zip(os.path.join(dl, name + '.csv.zip'),
-                         [(name + '.csv', data)] + [(k, v) for k, v in docs.items() if k == 'LICENSE-DATA.md'])
-        cols = t[name][0]
-        n_cols = len([c for c in cols if c not in PRIVATE_COLS]) + (1 if 'model_estimated' in cols else 0)
-        manifest['files'].append(dict(table=name, path='data/download/%s.csv.zip' % name, rows=len(t[name][1]),
-                                      cols=n_cols, csv_bytes=len(data), **info))
-    with io.open(os.path.join(dl, 'manifest.json'), 'w', encoding='utf-8', newline='\n') as fh:
+    tables, props = write_downloads(args.db, built, docs)
+    manifest = {'release': RELEASES[-1], 'built': built, 'files': tables, 'props': props}
+    with io.open(os.path.join(OUT, 'download', 'manifest.json'), 'w', encoding='utf-8', newline='\n') as fh:
         json.dump(manifest, fh, ensure_ascii=False, indent=1)
     stamp_versions()
     size = lambda rel: len(files[rel]) / 1e6
+    dls = [f['bytes'] for f in tables + props]
     print('网站数据：打开时下载 %.1f MB（index %.2f + bin %.2f），关键词 %.1f MB，%d 块详细内容共 %.1f MB；'
-          '下载包 %.1f MB；文章 %d、样品 %d、数值 %d' % (
+          '下载文件 %d 个共 %.1f MB（最大 %.1f MB）；文章 %d、样品 %d、数值 %d' % (
               size('index.json.gz') + size('index.bin.gz'), size('index.json.gz'), size('index.bin.gz'),
               size('search.json.gz'), n_chunks, sum(len(v) for k, v in files.items() if k.startswith('chunk/')) / 1e6,
-              os.path.getsize(zpath) / 1e6, len(t['papers'][1]), len(t['samples'][1]), len(t['measurements'][1])))
+              len(dls), sum(dls) / 1e6, max(dls) / 1e6, n_papers, n_samples, n_values))
 
 
 if __name__ == '__main__':

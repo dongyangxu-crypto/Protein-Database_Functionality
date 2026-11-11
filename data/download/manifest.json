@@ -1,97 +1,213 @@
 {
  "release": {
-  "version": "1.0",
-  "date": "2026-11-02",
-  "zh": "首次正式发布：ACS 期刊 2,338 篇论文、18,936 个样品、96,952 个数值；蛋白来源、蛋白形态、处理类型和单位规范化，测试方法英文名和方法概述；分页签检索、高级查询、批量检索、处理参数筛选；数据篮、下载中心、统计、浏览、性质分布页和帮助。",
-  "en": "First public release: 2,338 papers from ACS journals, 18,936 samples and 96,952 values; normalised protein sources, forms, treatment types and units, English test-method names and method summaries; tabbed search, query builder, batch search and treatment-parameter filters; data basket, download centre, statistics, browse, property pages and help."
+  "version": "1.1",
+  "date": "2026-11-11",
+  "zh": "加入 Elsevier、Springer Nature、MDPI、牛津大学出版社、Taylor & Francis、英国皇家化学会（RSC）六家出版商，与 ACS 合计 110 种期刊的 44,126 篇论文、344,515 个样品、1,714,457 个数值；下载改为每张表一个文件，平铺表按 17 项性质各一个文件。",
+  "en": "Added Elsevier, Springer Nature, MDPI, Oxford University Press, Taylor & Francis and the Royal Society of Chemistry: together with ACS, 44,126 papers from 110 journals, 344,515 samples and 1,714,457 values; downloads are now one file per table, with the flat table split into one file per property."
  },
- "built": "2026-11-02",
+ "built": "2026-11-11",
  "files": [
   {
    "table": "papers",
    "path": "data/download/papers.csv.zip",
-   "rows": 2338,
    "cols": 11,
-   "csv_bytes": 608931,
-   "bytes": 142022,
-   "sha256": "46b7257744766d892cd96e7020f8438e50bd163b914b55b6e9665d706767f57a"
+   "rows": 44126,
+   "bytes": 2666223,
+   "sha256": "912efb302e7a7c41024597d2ef04f7a8b5ad1772f4ce61261a61c5c0ba5f5c60"
   },
   {
    "table": "samples",
    "path": "data/download/samples.csv.zip",
-   "rows": 18936,
    "cols": 20,
-   "csv_bytes": 10718385,
-   "bytes": 1134528,
-   "sha256": "8c151946dae4dfbadf172bec6a2e85cffef9293e0acbeb002214d27f3f1c97fd"
+   "rows": 344515,
+   "bytes": 21883088,
+   "sha256": "cdadff26388d838cfc1a85c06273b5408aff030a279c5c9af3aa9fd9b9c4d0a8"
   },
   {
    "table": "ingredients",
    "path": "data/download/ingredients.csv.zip",
-   "rows": 22250,
    "cols": 6,
-   "csv_bytes": 1792485,
-   "bytes": 152632,
-   "sha256": "3468eacddef9383cfaa681cdb223bfa59799f760bad3f5fb07bcdd18bf3146a9"
+   "rows": 493826,
+   "bytes": 3892618,
+   "sha256": "ae6481546361aeb070953261d270e292b3ed490000bced1bf4229a010402c62c"
   },
   {
    "table": "treatments",
    "path": "data/download/treatments.csv.zip",
-   "rows": 44807,
    "cols": 23,
-   "csv_bytes": 8254530,
-   "bytes": 570809,
-   "sha256": "10da71c97c36168a18bf5ef0aa8ccd686dbba5d9520e0838dadbeec0be0fce3e"
+   "rows": 862740,
+   "bytes": 11797757,
+   "sha256": "f1d7d0f570eaa4d458fa808e6180a4631acaf79d20e4b43a6a6189261eaa9c79"
   },
   {
    "table": "treatment_params",
    "path": "data/download/treatment_params.csv.zip",
-   "rows": 91832,
    "cols": 7,
-   "csv_bytes": 6201038,
-   "bytes": 452941,
-   "sha256": "d870afe9c9c33632e0ce9cb7223d2d1894e8df0a967dec79fde56c3da02cf903"
+   "rows": 1873083,
+   "bytes": 10382719,
+   "sha256": "77fbe734f6c225fa88bdc654426a3863c72deae3ad5583dbe6af1b114eceb8f0"
   },
   {
    "table": "measurements",
    "path": "data/download/measurements.csv.zip",
-   "rows": 96952,
    "cols": 39,
-   "csv_bytes": 48867066,
-   "bytes": 3169415,
-   "sha256": "4faa3c357c8fa7aed1498f6428876eacfaf5bfc5ff5cc9d883859d7551fd013e"
+   "rows": 1714457,
+   "bytes": 61792359,
+   "sha256": "aefa02169b0b7495940ad2aa73ce5349ed616ad57dabc507c5a0b35767810672"
   },
   {
    "table": "measurement_conditions",
    "path": "data/download/measurement_conditions.csv.zip",
-   "rows": 189976,
    "cols": 7,
-   "csv_bytes": 17268335,
-   "bytes": 869844,
-   "sha256": "8da58228c2e00d9cc27a3afc10c92810cef1112f9970065ee6cfbf8fdcac767f"
+   "rows": 2336068,
+   "bytes": 13305640,
+   "sha256": "db9e5c1a34279d7f92f791b10a9c1ab0eb2da15363dd59a14b4009b94f99ab55"
   },
   {
    "table": "methods",
    "path": "data/download/methods.csv.zip",
-   "rows": 5213,
    "cols": 14,
-   "csv_bytes": 3039869,
-   "bytes": 596035,
-   "sha256": "d6ec4d5a7d5b8c7784c415b3e67d65ce22138b54e849f4f2a9c11e75e3d06e0e"
-  },
-  {
-   "table": "flat_measurements",
-   "path": "data/download/flat_measurements.csv.zip",
-   "rows": 96952,
-   "cols": 61,
-   "csv_bytes": 112300313,
-   "bytes": 5025130,
-   "sha256": "4d68adde397a2846447a311e9e5ecb9c803338f1cd27631574af27a166b97753"
+   "rows": 118671,
+   "bytes": 12583553,
+   "sha256": "7a9d452b061957932b6907a287fe96efe108ca482d925cbf31245f63d1ac5559"
   }
  ],
- "all": {
-  "path": "data/protein_db_csv.zip",
-  "bytes": 12108983,
-  "sha256": "42cbcbe9bf2f4c790b305aaaf73b9a8eb7bd50ca5fd1c7976288528950499259"
- }
+ "props": [
+  {
+   "property": "solubility",
+   "path": "data/download/flat_solubility.csv.zip",
+   "cols": 61,
+   "rows": 189344,
+   "bytes": 12706996,
+   "sha256": "823165fdf2e65772201fb51da3938fcab6d36fe0472da536999f92256b5177a0"
+  },
+  {
+   "property": "emulsifying",
+   "path": "data/download/flat_emulsifying.csv.zip",
+   "cols": 61,
+   "rows": 146048,
+   "bytes": 8974925,
+   "sha256": "e39e776628225491ae301f662fe17ca0e0742646c71b1ecee1fa9c1d06e7477d"
+  },
+  {
+   "property": "foaming",
+   "path": "data/download/flat_foaming.csv.zip",
+   "cols": 61,
+   "rows": 96524,
+   "bytes": 5415924,
+   "sha256": "8bc3e19919c05b45f03c154445343c83bec084af0b03d2dfbc6d20d6a133905d"
+  },
+  {
+   "property": "gelling",
+   "path": "data/download/flat_gelling.csv.zip",
+   "cols": 61,
+   "rows": 52429,
+   "bytes": 4214215,
+   "sha256": "9a112c14340ea7e62c8930897aeba23f9b10d4b4c767ae783a314469586a89fd"
+  },
+  {
+   "property": "water_holding",
+   "path": "data/download/flat_water_holding.csv.zip",
+   "cols": 61,
+   "rows": 108913,
+   "bytes": 8336182,
+   "sha256": "479fee44faf61165b9ee7cdeca907ee4f4fdd5e2621b3e516a4bc0d21e0bbf64"
+  },
+  {
+   "property": "oil_holding",
+   "path": "data/download/flat_oil_holding.csv.zip",
+   "cols": 61,
+   "rows": 19319,
+   "bytes": 1920888,
+   "sha256": "f8fec55e06d764862ae50bc6235e0a8f21ba6e4eebfbe5bb0a8defc6800fb67a"
+  },
+  {
+   "property": "particle_size",
+   "path": "data/download/flat_particle_size.csv.zip",
+   "cols": 61,
+   "rows": 287402,
+   "bytes": 18806469,
+   "sha256": "0c148fb9f07b5e07a86752dde70fb4f612258b1dfac086a890dcdad32c3fbe5b"
+  },
+  {
+   "property": "zeta_potential",
+   "path": "data/download/flat_zeta_potential.csv.zip",
+   "cols": 61,
+   "rows": 160428,
+   "bytes": 11363988,
+   "sha256": "a1f4458aa817bbe432b0c95a2a742993881a4393a7e030ec90612cf4f5906002"
+  },
+  {
+   "property": "pdi",
+   "path": "data/download/flat_pdi.csv.zip",
+   "cols": 61,
+   "rows": 45984,
+   "bytes": 3369068,
+   "sha256": "9d915bbba1a118ab85ee84ebff6d933edc78f3a568fe51e9f0209706e21859dc"
+  },
+  {
+   "property": "sulfhydryl",
+   "path": "data/download/flat_sulfhydryl.csv.zip",
+   "cols": 61,
+   "rows": 71613,
+   "bytes": 5527145,
+   "sha256": "1de68f971de9e31d56df8795dfc61426a5936832dceec7406c7c21e242cb2aef"
+  },
+  {
+   "property": "disulfide",
+   "path": "data/download/flat_disulfide.csv.zip",
+   "cols": 61,
+   "rows": 13470,
+   "bytes": 1155395,
+   "sha256": "bc2108bbbf6855861005a8d32d9dd4b43e7449428d3ee8c8726bd7fc5c246ad5"
+  },
+  {
+   "property": "surface_hydrophobicity",
+   "path": "data/download/flat_surface_hydrophobicity.csv.zip",
+   "cols": 61,
+   "rows": 62419,
+   "bytes": 5519118,
+   "sha256": "55c27202e66247e222ddbbc166f70479d721591ff52d1592222181a33c121e3b"
+  },
+  {
+   "property": "turbidity",
+   "path": "data/download/flat_turbidity.csv.zip",
+   "cols": 61,
+   "rows": 66865,
+   "bytes": 3514917,
+   "sha256": "2934e0b840859d1b310c2496d185e5d569d45c36d5220a9d162a1518a7d2214c"
+  },
+  {
+   "property": "degree_of_hydrolysis",
+   "path": "data/download/flat_degree_of_hydrolysis.csv.zip",
+   "cols": 61,
+   "rows": 55273,
+   "bytes": 3561154,
+   "sha256": "c3b191055f2046985617cab561ffbbf719be822d996a599384cca36351acbedc"
+  },
+  {
+   "property": "free_amino",
+   "path": "data/download/flat_free_amino.csv.zip",
+   "cols": 61,
+   "rows": 40381,
+   "bytes": 3144624,
+   "sha256": "d3350356dbe88c81f65487d4da2fd196536018ee96236c580dd0e5f91aadedc8"
+  },
+  {
+   "property": "encapsulation",
+   "path": "data/download/flat_encapsulation.csv.zip",
+   "cols": 61,
+   "rows": 54671,
+   "bytes": 4452096,
+   "sha256": "fd877d2f26a35ec95a6854ad2f88e79f3e912b7aac760fa4cdd50cf09c33286e"
+  },
+  {
+   "property": "antioxidant",
+   "path": "data/download/flat_antioxidant.csv.zip",
+   "cols": 61,
+   "rows": 243374,
+   "bytes": 14893233,
+   "sha256": "74974dce1ca26288c78f3b6f3cf73afb3b2e3ec65b55dc530b7dd63d43378c41"
+  }
+ ]
 }

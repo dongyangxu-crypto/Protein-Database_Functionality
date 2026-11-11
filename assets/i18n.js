@@ -174,7 +174,9 @@ window.PDF_TEXT = (() => {
     pp_single: '单个数值', pp_show_more: '显示全部 {n} 行', pp_shown: '显示前 {n} 行', pp_paper: '论文',
     // 下载
     dl_title: '下载', dl_sub: 'PDF 的全部数据都可以下载，UTF-8 编码的 CSV（Excel 可直接打开）。数据许可 CC BY 4.0，使用时请引用本数据库和对应的原始论文。',
-    dl_all: '全部数据', dl_all_sub: '9 张表 + 说明（README）+ 数据许可', dl_btn: '下载', dl_tables: '分表下载',
+    dl_flat: '按性质下载（平铺表）', dl_flat_sub: '一行一个数值，样品、配料、处理条件、测试方法和论文信息都在同一行，适合直接在 Excel 里筛选；17 项性质各一个文件。',
+    dl_th_prop: '性质', dl_total: '共 {n} 个文件、{s}；每个压缩包里都附说明（README）和数据许可', dl_btn: '下载', dl_tables: '分表下载（关系表）',
+    dl_tables_sub: '完整数据库，各表用 doi、sample_id、measurement_id 互相关联，适合导入数据库或用 R / Python 合并。',
     dl_th_file: '文件', dl_th_row: '一行是', dl_th_cols: '主要的列', dl_th_rows: '行数', dl_th_size: '大小', dl_th_hash: 'SHA-256',
     dl_custom: '导出筛选结果', dl_custom_text: '在「检索」页筛好后，用结果上方的「导出」按需下载：CSV、TSV、Excel 或 JSON，长表或宽表，全部结果或勾选的行，还可以自选列。',
     dl_go_search: '去检索 →', dl_fields: '各表每一列的含义见', dl_fields_link: '帮助 · 字段说明', dl_history: '历史版本',
@@ -301,7 +303,9 @@ window.PDF_TEXT = (() => {
     pp_copy: 'Copy link', pp_dl: 'Download these data', pp_none: 'No values match', pp_single: 'Single value',
     pp_show_more: 'Show all {n} rows', pp_shown: 'First {n} rows', pp_paper: 'Paper',
     dl_title: 'Download', dl_sub: 'All PDF data can be downloaded as UTF-8 CSV files (open directly in Excel). Data are licensed CC BY 4.0 — please cite this database and the original articles.',
-    dl_all: 'All data', dl_all_sub: '9 tables + README + data licence', dl_btn: 'Download', dl_tables: 'Individual tables',
+    dl_flat: 'By property (flat tables)', dl_flat_sub: 'One row per value, with the sample, ingredients, treatment conditions, test method and paper in the same row — ready to filter in Excel; one file for each of the 17 properties.',
+    dl_th_prop: 'Property', dl_total: '{n} files, {s} in total; each archive includes the README and the data licence', dl_btn: 'Download', dl_tables: 'Relational tables',
+    dl_tables_sub: 'The complete database; tables are linked by doi, sample_id and measurement_id — for importing into a database or joining in R / Python.',
     dl_th_file: 'File', dl_th_row: 'One row per', dl_th_cols: 'Key columns', dl_th_rows: 'Rows', dl_th_size: 'Size', dl_th_hash: 'SHA-256',
     dl_custom: 'Export filtered results', dl_custom_text: 'After filtering on the Search page, use “Export” above the results: CSV, TSV, Excel or JSON; long or wide; all results or selected rows; and pick the columns.',
     dl_go_search: 'Go to Search →', dl_fields: 'What each column means:', dl_fields_link: 'Help · Fields', dl_history: 'Previous versions',
@@ -375,7 +379,7 @@ window.PDF_TEXT = (() => {
         <h3>「模型」的数值能直接用吗？</h3><p>可以用来比较趋势和量级，但它是从图里读出的估计值；需要精确数值时请回到原文。</p>
         <h3>为什么有的数值没有标准单位？</h3><p>原文单位写法认不出、基准不同或需要额外信息（如分子量）才能换算时，不做换算，只保留原单位。</p>
         <h3>数据会更新吗？</h3><p>会分批加入更多出版商的论文；每次更新都写在<a href="#/changelog">更新日志</a>里。</p>
-        <h3>能下载全部数据吗？</h3><p>能，见<a href="#/download">下载</a>页：全部数据一个包，或按表分别下载，附 SHA-256 校验值。</p>`],
+        <h3>能下载全部数据吗？</h3><p>能，见<a href="#/download">下载</a>页：完整数据库按表分别下载，或按性质下载平铺表（一行一个数值，Excel 直接打开），都附 SHA-256 校验值。</p>`],
       ['feedback', '反馈与补充数据', `<p>发现数据错误、想补充论文或建议新功能，欢迎在本网站的 GitHub 仓库提交 Issue（网站发布在 GitHub 上时，页面右上角有 GitHub 链接），写明 DOI 和样品编号。</p>`],
       ['cite', '如何引用', `<p>PDF 的论文正在准备中。在那之前，请引用本网站网址（注明访问日期和版本号），并引用数据所在的原始论文（每条数据都附 DOI）。数据许可为 CC BY 4.0。</p>`],
     ],
@@ -424,7 +428,7 @@ window.PDF_TEXT = (() => {
         <h3>Can I use model-derived values?</h3><p>Yes for trends and orders of magnitude, but they are estimates read from figures; go back to the article when you need exact numbers.</p>
         <h3>Why do some values have no standard unit?</h3><p>When the unit is unrecognised, on a different basis or needs extra information (e.g. molecular weight), it is not converted and only the original unit is kept.</p>
         <h3>Will the data be updated?</h3><p>Yes — papers from more publishers are added in batches; every update is listed in the <a href="#/changelog">changelog</a>.</p>
-        <h3>Can I download everything?</h3><p>Yes, see <a href="#/download">Download</a>: all data in one package or table by table, with SHA-256 checksums.</p>`],
+        <h3>Can I download everything?</h3><p>Yes, see <a href="#/download">Download</a>: the complete database table by table, or flat tables by property (one row per value, opens in Excel), with SHA-256 checksums.</p>`],
       ['feedback', 'Feedback and contributions', `<p>To report an error, contribute papers or suggest a feature, please open an issue in this website’s GitHub repository (when the site is published on GitHub there is a GitHub link at the top right), giving the DOI and sample number.</p>`],
       ['cite', 'How to cite', `<p>A paper describing PDF is in preparation. Until then, please cite this website (with access date and version) and the original articles (every record has a DOI). Data are licensed CC BY 4.0.</p>`],
     ],

@@ -8,31 +8,42 @@ A searchable database of food protein functional properties. Every value is link
 
 ## 内容 / Contents
 
-| | 数量 Count（版本 1.0，数据 2026-10-27） |
+| | 数量 Count（版本 1.1，数据 2026-11-11） |
 |---|---|
-| 论文 Papers | 2,338 |
-| 样品 Samples | 18,936 |
-| 数值 Values | 96,952 |
-| 测试方法 Test methods | 5,213 |
+| 论文 Papers | 44,126 |
+| 期刊 Journals | 110 |
+| 样品 Samples | 344,515 |
+| 数值 Values | 1,714,457 |
+| 测试方法 Test methods | 118,671 |
 
 17 项功能特性 / 17 properties：溶解度 solubility、乳化性 emulsifying、起泡性 foaming、凝胶性 gelling、持水性 water-holding、持油性 oil-holding、粒径 particle size、ζ-电位 ζ-potential、PDI、巯基含量 sulfhydryl、二硫键含量 disulfide bonds、表面疏水性 surface hydrophobicity、浊度 turbidity、水解度 degree of hydrolysis、游离氨基含量 free amino groups、包埋率/负载率 encapsulation/loading efficiency、抗氧化活性 antioxidant activity。
 
-目前收录的是 ACS 期刊（主要是 *Journal of Agricultural and Food Chemistry*、*ACS Food Science & Technology*）的论文，其他出版商的数据会陆续加入。/ Currently covers ACS journals (mainly *J. Agric. Food Chem.* and *ACS Food Sci. Technol.*); other publishers will be added.
+目前收录七家出版商的论文，其他出版商的数据会陆续加入。/ Currently covers seven publishers; more will be added.
+
+| 出版商 Publisher | 期刊 Journals | 论文 Papers | 样品 Samples | 数值 Values |
+|---|---:|---:|---:|---:|
+| Elsevier | 54 | 32,120 | 250,602 | 1,266,152 |
+| Springer Nature | 26 | 3,782 | 29,888 | 138,103 |
+| MDPI | 5 | 2,968 | 23,467 | 114,047 |
+| ACS | 5 | 2,338 | 18,936 | 96,952 |
+| Oxford University Press | 5 | 1,444 | 10,925 | 51,293 |
+| Taylor & Francis | 12 | 1,208 | 9,082 | 40,114 |
+| Royal Society of Chemistry | 3 | 266 | 1,615 | 7,796 |
 
 ## 网站功能 / Features
 
 - **检索 / Search**：一个检索框认蛋白来源、处理方式、性质、测试方法、期刊和 DOI，边输边提示；分页签筛选（性质与数值、蛋白、样品处理、测试方法、文献），每个选项带计数；处理温度、时间、pH、压力、功率、频率范围；只看有 SD 的数值、只看纯蛋白样品；批量检索（粘贴一列 DOI 或样品名）；高级查询（条件之间 AND / OR / NOT，可复制链接、保存）；结果按数值、样品或论文显示；没有结果时提示去掉哪个条件。/ One search box with suggestions for protein sources, treatments, properties, test methods, journals and DOIs; tabbed filters with counts; treatment-parameter ranges; SD-only and pure-protein filters; batch search; query builder (AND / OR / NOT); results per value, sample or paper; suggestions when nothing matches.
 - **浏览、统计、性质分布页 / Browse, statistics, property pages**：按性质、蛋白来源、处理类型、测试方法、期刊浏览；全库分布图；某性质 × 某蛋白 × 某处理的数值按论文分列画图，附方法概述、处理条件和数值表。
-- **下载 / Download**：全部数据一个包，或按表分别下载，附行数、大小和 SHA-256；检索结果导出 CSV / TSV / Excel / JSON（全部结果、当前页或勾选的行，长表或宽表，可自选列）；文献列表导出 RIS / BibTeX / 纯文本；每张图可下载 PNG / SVG / 数据 CSV。
+- **下载 / Download**：完整数据库按表分别下载，或按 17 项性质下载平铺表（一行一个数值，Excel 直接打开），附行数、大小和 SHA-256；检索结果导出 CSV / TSV / Excel / JSON（全部结果、当前页或勾选的行，长表或宽表，可自选列）；文献列表导出 RIS / BibTeX / 纯文本；每张图可下载 PNG / SVG / 数据 CSV。
 - **数据篮 / Basket**：跨多次检索收集样品（存在浏览器里），对比 2–6 个样品，或一起导出。
 - 中英双语、深色模式、手机可用；筛选条件写进网址，可以收藏和分享。/ Chinese / English, dark mode, mobile layout; filters are kept in the URL.
 
 ## 数据来源和注意事项 / Data origin and caveats
 
-- **来源于模型 / Model-derived：** 约 69% 的数值是由模型从论文图中读取的估计值（`data_origin = 来源于模型 (model-derived)`，网站上标「模型 / Model」）。其余是作者在表格或正文中给出的原值（`作者原值 (author-reported)`）。
-  About 69% of the values were read from figures by a model and are estimates (`data_origin = 来源于模型 (model-derived)`, marked "Model" on the website). The rest are author-reported values from tables or the main text.
-- **样品处理和测试方法是两回事 / Sample treatment ≠ test method：** 样品处理是样品在测定前经过的制备和改性（超声、加热、酶解…），见 `treatments`；测试方法是这项性质怎么测的，见 `methods` 和数值的 `test_method`。约 97% 的数值对应到了具体测试方法，其余标「原文未写明」或「不确定」（一项性质用了几种方法、分不清某个数用的哪种）。
-  Sample treatment (sonication, heating, hydrolysis …, in `treatments`) is the processing a sample received before measurement; the test method (`methods`, `test_method`) is how the property was measured. About 97% of values are linked to a specific test method; the rest are marked "not stated" or "uncertain".
+- **来源于模型 / Model-derived：** 约 65% 的数值是由模型从论文图中读取的估计值（`data_origin = 来源于模型 (model-derived)`，网站上标「模型 / Model」）。其余是作者在表格或正文中给出的原值（`作者原值 (author-reported)`）。
+  About 65% of the values were read from figures by a model and are estimates (`data_origin = 来源于模型 (model-derived)`, marked "Model" on the website). The rest are author-reported values from tables or the main text.
+- **样品处理和测试方法是两回事 / Sample treatment ≠ test method：** 样品处理是样品在测定前经过的制备和改性（超声、加热、酶解…），见 `treatments`；测试方法是这项性质怎么测的，见 `methods` 和数值的 `test_method`。约 98% 的数值对应到了具体测试方法，其余标「原文未写明」或「不确定」（一项性质用了几种方法、分不清某个数用的哪种）。
+  Sample treatment (sonication, heating, hydrolysis …, in `treatments`) is the processing a sample received before measurement; the test method (`methods`, `test_method`) is how the property was measured. About 98% of values are linked to a specific test method; the rest are marked "not stated" or "uncertain".
 - 样品组成、处理条件、测试方法和数值的对应关系由自动流程完成（大模型解读 + 程序核对）。使用前请通过 DOI 对照原文核对。
   Sample, condition and test-method assignment was done by an automated pipeline (LLM interpretation with programmatic checks). Please verify against the original article (DOI) before use.
 - 本库只包含数值、样品组成、处理条件和测试方法，不包含论文原文句子。论文版权归原作者和出版商所有；使用数据请引用对应的原始论文。
@@ -40,8 +51,10 @@ A searchable database of food protein functional properties. Every value is link
 
 ## 下载 / Download
 
-[`data/protein_db_csv.zip`](data/protein_db_csv.zip)：全部数据，UTF-8 CSV（Excel 可直接打开）/ all data as UTF-8 CSV files。
-每张表也可以单独下载：`data/download/<表名>.csv.zip`；行数、大小和 SHA-256 见 [`data/download/manifest.json`](data/download/manifest.json)。/ Each table is also available on its own in `data/download/`, with row counts, sizes and SHA-256 checksums in `manifest.json`.
+全部是 UTF-8 CSV（Excel 可直接打开），每个压缩包里都附本说明和数据许可；行数、大小和 SHA-256 见 [`data/download/manifest.json`](data/download/manifest.json)。/ All files are UTF-8 CSV (open directly in Excel); each archive includes this README and the data licence; row counts, sizes and SHA-256 checksums are in `manifest.json`.
+
+- **关系表 / Relational tables**：`data/download/<表名>.csv.zip`，下表前八张，各表用 `doi`、`sample_id`、`measurement_id` 互相关联。/ The first eight tables below, one archive each, linked by `doi`, `sample_id` and `measurement_id`.
+- **平铺表 / Flat tables**：`data/download/flat_<性质>.csv.zip`，按 17 项性质各一个文件（如 `flat_solubility.csv.zip`），一行一个数值，样品、配料、处理、测试方法和论文信息都在同一行。整张平铺表太大（约 2 GB），不单独提供。/ One archive per property (e.g. `flat_solubility.csv.zip`), one row per value with all sample, ingredient, treatment, method and paper fields; the full flat table (~2 GB) is not provided as one file.
 
 | 文件 File | 一行是 One row per | 主要的列 Key columns |
 |---|---|---|
@@ -53,7 +66,7 @@ A searchable database of food protein functional properties. Every value is link
 | `measurements.csv` | 数值 value | `measurement_id`, `sample_id`, `property`, `measure_name`, `value`, `sd`, `unit`, `value_std`, `unit_std`, `conditions_all`, `test_method`, `test_method_en`, `method_params`, `method_status`, `source_type`, `data_origin`, `source_item` |
 | `measurement_conditions.csv` | 测定条件 measurement condition | `measurement_id`, `name`, `value`, `unit` |
 | `methods.csv` | 测试方法 test method | `doi`, `method_id`, `property`, `test_method`, `test_method_en`, `method_raw`, `reference`, `instrument`, `method_params`, `method_summary`, `applies_to` |
-| `flat_measurements.csv` | 数值（含样品、处理、论文信息）value with all sample/paper info | 以上全部 all of the above |
+| `flat_<property>.csv` | 某项性质的数值（含样品、处理、论文信息）value of one property, with all sample/paper info | 以上全部 all of the above |
 
 约定 / Conventions：
 - `value` 是纯数字；原文不是单个数（如「<0.1」）时留空，原样在 `value_text`。/ `value` is numeric; non-numeric entries (e.g. "<0.1") are kept in `value_text`.
