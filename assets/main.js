@@ -48,14 +48,15 @@
   }
   A.repoUrl = repoUrl;
   function renderFoot() {
+    // 11-12 用户：页脚压成一行（原来三栏重复了导航、数据说明和引用）
     const rel = D.meta && D.meta.release ? D.meta.release.version : '', repo = repoUrl();
-    const links = [['#/', 'nav_home'], ['#/search', 'nav_search'], ['#/browse', 'nav_browse'], ['#/stats', 'nav_stats'], ['#/download', 'nav_download'], ['#/help', 'nav_help'], ['#/changelog', 'nav_changelog'], ['#/basket', 'nav_basket']];
-    $('foot').innerHTML = `<div class="wrap foot-cols">
-        <div><div class="foot-brand">${$('logo-mark').outerHTML.replace('id="logo-mark"', '')}<b>PDF</b></div><p>${esc(t('f_about'))}</p></div>
-        <div><h4>${esc(t('f_pages'))}</h4><ul>${links.map(([h, k]) => `<li><a href="${h}">${esc(t(k))}</a></li>`).join('')}${repo ? `<li><a href="${repo}" target="_blank" rel="noopener">GitHub</a></li>` : ''}</ul></div>
-        <div><h4>${esc(t('f_data'))}</h4><p>${esc(t('f_data_1'))}</p><p>${esc(t('f_data_2'))}</p><p>${esc(t('f_data_3'))}</p>
-          <h4 style="margin-top:14px">${esc(t('f_cite'))}</h4><p>${esc(t('f_cite_1'))}</p><p>${esc(t('f_cite_2'))} <a href="#/help?s=feedback">${esc(t('f_cite_link'))}</a></p></div></div>
-      <div class="wrap foot-bottom"><span>PDF · Protein Database of Functionality</span>${rel ? `<span>${esc(t('f_version', { v: rel }))}</span>` : ''}${D.meta ? `<span>${esc(t('f_built', { d: D.meta.built }))}</span>` : ''}<span>${esc(t('f_copy'))}</span></div>`;
+    const items = ['<b>PDF · Protein Database of Functionality</b>'];
+    if (rel) items.push(esc(t('f_version', { v: rel })));
+    if (D.meta) items.push(esc(t('f_built', { d: D.meta.built })));
+    items.push(esc(t('f_data_1')), `<a href="#/help?s=cite">${esc(t('f_cite'))}</a>`, `<a href="#/help?s=feedback">${esc(t('f_feedback'))}</a>`);
+    if (repo) items.push(`<a href="${repo}" target="_blank" rel="noopener">GitHub</a>`);
+    items.push(`${esc(t('f_lab'))}<a href="https://dzjxzyd.github.io/ai4fh-lab/" target="_blank" rel="noopener">AI4FH Lab</a> · UCD`, esc(t('f_copy')));
+    $('foot').innerHTML = `<div class="wrap foot-line">${items.map((x) => `<span>${x}</span>`).join('')}</div>`;
   }
   function applyStatic() {
     document.documentElement.lang = A.lang() === 'zh' ? 'zh-CN' : 'en';

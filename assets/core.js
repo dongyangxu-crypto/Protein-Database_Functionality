@@ -236,6 +236,10 @@
   let FACETS = [];
   function setupFacets() {
     const C = D.c, d = D.dict;
+    // 单位筛选只列标准单位（有数值换算到它）和「无单位」，其余约 9 千种没换算的原文写法合成一项「其他」（11-12 用户：单位筛选 9,170 项太乱）
+    const U_OTHER = d.unit.length, uStd = new Uint8Array(d.unit.length);
+    for (let i = 0; i < D.nV; i++) if (C.vstd[i] === C.vstd[i]) uStd[C.vu[i]] = 1;
+    if (d.unit.indexOf('') >= 0) uStd[d.unit.indexOf('')] = 1;
     FACETS = [
       { key: 'prop', level: 'v', n: D.meta.props.length, get: (i) => C.vp[i], label: propName, tok: (c) => D.meta.props[c], fixed: true },
       { key: 'src', level: 's', kind: 'multi', off: C.ssrc_off, ids: C.ssrc, n: d.src.length, label: srcLabel, tok: (c) => d.src[c], find: true, top: 24 },
@@ -247,7 +251,8 @@
         tok: (c) => (c < 3 ? ['unextracted', 'notstated', 'unclear'][c] : d.method[c][0]), find: true, top: 24 },
       { key: 'sys', level: 's', n: d.sys.length, get: (s) => C.ssys[s], label: (c) => cat(d.sys[c]), tok: (c) => d.sys[c] },
       { key: 'journal', level: 'p', n: d.journal.length, get: (p) => C.pj[p], label: (c) => d.journal[c] || t('unknown'), tok: (c) => d.journal[c], find: true, top: 12 },
-      { key: 'unit', level: 'v', n: d.unit.length, get: (i) => C.vu[i], label: (c) => d.unit[c] || t('no_unit'), tok: (c) => d.unit[c] || '-', find: true, top: 12 },
+      { key: 'unit', level: 'v', n: d.unit.length + 1, get: (i) => (uStd[C.vu[i]] ? C.vu[i] : U_OTHER),
+        label: (c) => (c === U_OTHER ? t('unit_other') : d.unit[c] || t('no_unit')), tok: (c) => (c === U_OTHER ? '~other' : d.unit[c] || '-'), top: 20, last: U_OTHER },
       { key: 'origin', level: 'v', n: 2, get: (i) => C.vo[i] & 1, label: (c) => t(c ? 'o_model' : 'o_author'), tok: (c) => (c ? 'model' : 'author'), fixed: true },
     ];
     FACETS.forEach((f, fi) => {

@@ -78,19 +78,16 @@ window.PDF_TEXT = (() => {
     nav_basket: '数据篮', nav_changelog: '更新日志',
     loading: '正在加载数据…', load_fail: '数据加载失败：{e}', loading_search: '正在加载关键词索引…',
     no_stream: '这个浏览器太旧，不能解压数据。请换用新版 Chrome、Edge、Firefox 或 Safari。',
-    notice_short: '带 <span class="badge model">模型</span> 标记的数值<b>来源于模型</b>：由模型从论文的图中读取，是估计值，不是作者给出的原值。全部数据由自动流程从已发表论文中提取，使用前请点 DOI 对照原文核对。',
     // 页脚
-    f_about: 'PDF 收录从已发表期刊论文中提取的食品蛋白功能特性数值，每个数值都对应到样品、样品处理和测试方法。',
-    f_pages: '页面', f_data: '数据', f_data_1: '数据许可 CC BY 4.0，代码 MIT', f_data_2: '只收录数值、样品组成、处理条件和测试方法概述，不收录论文原文句子',
-    f_data_3: '从图中读出的数值标「模型」，是估计值', f_cite: '引用与反馈', f_cite_1: '使用数据请引用本数据库和对应的原始论文（DOI）',
-    f_cite_2: '发现错误或想补充数据：', f_cite_link: '帮助 · 反馈', f_built: '数据更新：{d}', f_version: '版本 {v}',
-    f_copy: '论文版权归原作者和出版商所有',
+    f_data_1: '数据许可 CC BY 4.0，代码 MIT', f_cite: '如何引用', f_feedback: '反馈',
+    f_built: '数据更新：{d}', f_version: '版本 {v}',
+    f_copy: '论文版权归原作者和出版商所有', f_lab: '开发：',
     // 分面、通用
     f_prop: '功能特性', f_src: '蛋白来源', f_pcat: '蛋白类别', f_form: '蛋白形态', f_tt: '样品处理类型', f_tcat: '样品处理类别',
     f_method: '测试方法', f_sys: '体系', f_journal: '期刊', f_unit: '单位', f_origin: '数据来源', f_paper: '论文', f_q: '关键词',
     f_batch: '批量', f_adv: '高级查询', f_sd: '有 SD', f_pure: '纯蛋白样品',
     o_author: '作者原值', o_model: '来源于模型（读图）', m_unextracted: '未提取方法', m_none: '原文未写明方法', m_amb: '方法不确定',
-    not_stated: '原文未写明', no_unit: '（无单位）', unknown: '不明', find: '查找…', more: '更多（{n}）', less: '收起', reset: '清除全部',
+    not_stated: '原文未写明', no_unit: '（无单位）', unit_other: '其他（未换算的原文单位）', unknown: '不明', find: '查找…', more: '更多（{n}）', less: '收起', reset: '清除全部',
     clear: '清除', min: '最小', max: '最大', all: '全部', copy: '复制', copied: '已复制',
     // 首页
     h_title: '<em>PDF</em>：蛋白质功能特性数据库', h_ver: '版本 {v}', h_built: '数据更新于 {d}', h_nprops: '{n} 项功能特性',
@@ -137,6 +134,10 @@ window.PDF_TEXT = (() => {
     ex_confirm: '要导出 {n} 行，需要下载 {k} 块详细数据，可能要一会儿。继续吗？',
     badge_model: '模型', badge_model_tip: '来源于模型：从论文图中读取的估计值，不是作者原值',
     empty: '没有符合条件的数据', relax_t: '试试去掉一个条件：', relax_i: '去掉「{f}」→ {n} 条', add_filter: '加入筛选',
+    filter_added: '已加入筛选：{f}', filter_already: '「{f}」已经在筛选条件里',
+    sig_tip: '显著性字母（原文作者标注）：只在同一篇论文、同一张表或图里的样品之间比较，字母相同表示差异不显著',
+    sig_note: '是原文作者标的显著性分组：只在同一篇论文、同一张表或图里的样品之间比较，有相同字母的两个数值差异不显著（显著性水平见原文，通常 p < 0.05）；不同论文的字母互不相关。',
+    open_doi_tip: '在出版商网站打开原文：{t}',
     col_prop: '性质', col_value: '数值', col_sample: '样品', col_protein: '蛋白', col_treat: '样品处理', col_method: '测试方法',
     col_ph: '测定 pH', col_journal: '期刊', col_source: '来源', col_paper: '论文', col_values: '数值', col_props: '测了哪些性质',
     col_nsamples: '样品', col_measure: '测量名称', cols_hint: '性质和数值两列一直显示',
@@ -150,6 +151,7 @@ window.PDF_TEXT = (() => {
     c_hist: '分布', c_box: '分组比较', c_scatter: '散点', c_prop: '性质', c_unit: '单位', c_group: '分组', c_x: '横轴',
     c_log: '对数坐标', c_table: '表格', c_none: '当前结果里没有可以画的数值',
     c_note: '只画单位为「{u}」的 {n} 个数值（这项性质共 {m} 个）；作者原值和读图值一起画。',
+    c_out: '另有 {n} 个极端值在显示范围外，没有画（最小 {a}，最大 {b}；勾「对数坐标」可以看全部）。',
     c_note_sc: '只画单位为「{u}」且有横轴取值的 {n} 个数值；点多于 {cap} 个时均匀抽取。', c_count: '数值个数', c_count_fmt: '{n} 个数值',
     c_median: '中位数', c_range: '范围', c_group_n: '组（每组至少 3 个数值，取前 12）', c_dl: '下载', c_csv: '数据 CSV',
     g_src: '蛋白来源', g_tt: '样品处理类型', g_method: '测试方法', g_pcat: '蛋白类别', g_form: '蛋白形态', g_journal: '期刊', g_sys: '体系',
@@ -177,10 +179,8 @@ window.PDF_TEXT = (() => {
     dl_flat: '按性质下载（平铺表）', dl_flat_sub: '一行一个数值，样品、配料、处理条件、测试方法和论文信息都在同一行，适合直接在 Excel 里筛选；17 项性质各一个文件。',
     dl_th_prop: '性质', dl_total: '共 {n} 个文件、{s}；每个压缩包里都附说明（README）和数据许可', dl_btn: '下载', dl_tables: '分表下载（关系表）',
     dl_tables_sub: '完整数据库，各表用 doi、sample_id、measurement_id 互相关联，适合导入数据库或用 R / Python 合并。',
-    dl_th_file: '文件', dl_th_row: '一行是', dl_th_cols: '主要的列', dl_th_rows: '行数', dl_th_size: '大小', dl_th_hash: 'SHA-256',
-    dl_custom: '导出筛选结果', dl_custom_text: '在「检索」页筛好后，用结果上方的「导出」按需下载：CSV、TSV、Excel 或 JSON，长表或宽表，全部结果或勾选的行，还可以自选列。',
-    dl_go_search: '去检索 →', dl_fields: '各表每一列的含义见', dl_fields_link: '帮助 · 字段说明', dl_history: '历史版本',
-    dl_history_text: '每个版本的数据都保留在 GitHub 仓库的提交历史里，可以按日期取回。', dl_verify: '下载后可以用 SHA-256 核对文件是否完整，例如 Windows：',
+    dl_th_file: '文件', dl_th_row: '一行是', dl_th_cols: '主要的列', dl_th_rows: '行数', dl_th_size: '大小',
+    dl_fields: '各表每一列的含义见', dl_fields_link: '帮助 · 字段说明',
     dl_manifest_fail: '文件清单加载失败：{e}',
     tb_papers: '论文', tb_samples: '样品', tb_ingredients: '复配物', tb_treatments: '样品处理步骤', tb_treatment_params: '样品处理参数',
     tb_measurements: '数值', tb_measurement_conditions: '测定条件', tb_methods: '测试方法', tb_flat_measurements: '数值（含样品、处理、论文信息的平铺表）',
@@ -211,17 +211,14 @@ window.PDF_TEXT = (() => {
     nav_basket: 'Basket', nav_changelog: 'Changelog',
     loading: 'Loading data…', load_fail: 'Failed to load data: {e}', loading_search: 'Loading keyword index…',
     no_stream: 'This browser is too old to decompress the data. Please use a recent Chrome, Edge, Firefox or Safari.',
-    notice_short: 'Values marked <span class="badge model">Model</span> are <b>model-derived</b>: they were read from figures in the papers by a model and are estimates, not author-reported numbers. All data were extracted automatically from published papers — please check against the original article (DOI) before use.',
-    f_about: 'PDF collects functional-property values of food proteins extracted from published journal articles; every value is linked to its sample, sample treatment and test method.',
-    f_pages: 'Pages', f_data: 'Data', f_data_1: 'Data CC BY 4.0, code MIT', f_data_2: 'Values, sample composition, processing conditions and test-method summaries only — no text from the articles',
-    f_data_3: 'Values read from figures are marked “Model” and are estimates', f_cite: 'Cite & feedback', f_cite_1: 'Please cite this database and the original articles (DOI)',
-    f_cite_2: 'Found an error or want to contribute data?', f_cite_link: 'Help · Feedback', f_built: 'Data updated {d}', f_version: 'Version {v}',
-    f_copy: 'Article copyright remains with the authors and publishers',
+    f_data_1: 'Data CC BY 4.0, code MIT', f_cite: 'How to cite', f_feedback: 'Feedback',
+    f_built: 'Data updated {d}', f_version: 'Version {v}',
+    f_copy: 'Article copyright remains with the authors and publishers', f_lab: 'Developed by ',
     f_prop: 'Functional property', f_src: 'Protein source', f_pcat: 'Protein category', f_form: 'Protein form',
     f_tt: 'Sample treatment type', f_tcat: 'Sample treatment category', f_method: 'Test method', f_sys: 'System', f_journal: 'Journal',
     f_unit: 'Unit', f_origin: 'Data origin', f_paper: 'Paper', f_q: 'Keyword', f_batch: 'Batch', f_adv: 'Query', f_sd: 'With SD',
     f_pure: 'Pure protein', o_author: 'Author-reported', o_model: 'Model-derived (from figure)', m_unextracted: 'Method not extracted',
-    m_none: 'Not stated in the article', m_amb: 'Method unclear', not_stated: 'Not stated', no_unit: '(no unit)', unknown: 'Unknown',
+    m_none: 'Not stated in the article', m_amb: 'Method unclear', not_stated: 'Not stated', no_unit: '(no unit)', unit_other: 'Other (original units, not converted)', unknown: 'Unknown',
     find: 'Find…', more: 'More ({n})', less: 'Less', reset: 'Clear all', clear: 'Clear', min: 'Min', max: 'Max', all: 'All', copy: 'Copy', copied: 'Copied',
     h_title: '<em>PDF</em>: Protein Database of Functionality', h_ver: 'Version {v}', h_built: 'Data updated {d}', h_nprops: '{n} functional properties',
     h_lead: 'Functional-property values of food proteins extracted from published papers — every value linked to its sample, sample treatment and test method.',
@@ -266,6 +263,10 @@ window.PDF_TEXT = (() => {
     ex_confirm: 'Exporting {n} rows needs {k} data blocks and may take a while. Continue?',
     badge_model: 'Model', badge_model_tip: 'Model-derived: estimated from a figure, not an author-reported value',
     empty: 'No data match the filters', relax_t: 'Try removing one filter:', relax_i: 'Without “{f}” → {n}', add_filter: 'Add as filter',
+    filter_added: 'Filter added: {f}', filter_already: '“{f}” is already a filter',
+    sig_tip: 'Significance letter (as given by the authors): compares samples only within the same table or figure of the same paper; values sharing a letter are not significantly different',
+    sig_note: 'are the authors’ significance groupings: they compare samples only within the same table or figure of the same paper, and two values sharing a letter are not significantly different (significance level as stated in the article, usually p < 0.05). Letters from different papers are unrelated.',
+    open_doi_tip: 'Open the article on the publisher’s site: {t}',
     col_prop: 'Property', col_value: 'Value', col_sample: 'Sample', col_protein: 'Protein', col_treat: 'Sample treatment', col_method: 'Test method',
     col_ph: 'pH', col_journal: 'Journal', col_source: 'Source', col_paper: 'Paper', col_values: 'Values', col_props: 'Properties measured',
     col_nsamples: 'Samples', col_measure: 'Measure', cols_hint: 'Property and value are always shown',
@@ -279,6 +280,7 @@ window.PDF_TEXT = (() => {
     c_hist: 'Distribution', c_box: 'By group', c_scatter: 'Scatter', c_prop: 'Property', c_unit: 'Unit', c_group: 'Group by',
     c_x: 'X axis', c_log: 'Log scale', c_table: 'Table', c_none: 'Nothing to plot in the current results',
     c_note: 'Plots the {n} values in “{u}” ({m} values of this property in total); author-reported and model-derived values together.',
+    c_out: '{n} extreme values outside the shown range are not plotted (min {a}, max {b}; tick “Log scale” to see all).',
     c_note_sc: 'Plots the {n} values in “{u}” that have an X value; sampled evenly above {cap} points.', c_count: 'Values',
     c_count_fmt: '{n} values', c_median: 'median', c_range: 'range', c_group_n: 'groups (≥ 3 values each, top 12)', c_dl: 'Download', c_csv: 'Data CSV',
     g_src: 'Protein source', g_tt: 'Sample treatment type', g_method: 'Test method', g_pcat: 'Protein category', g_form: 'Protein form',
@@ -306,11 +308,9 @@ window.PDF_TEXT = (() => {
     dl_flat: 'By property (flat tables)', dl_flat_sub: 'One row per value, with the sample, ingredients, treatment conditions, test method and paper in the same row — ready to filter in Excel; one file for each of the 17 properties.',
     dl_th_prop: 'Property', dl_total: '{n} files, {s} in total; each archive includes the README and the data licence', dl_btn: 'Download', dl_tables: 'Relational tables',
     dl_tables_sub: 'The complete database; tables are linked by doi, sample_id and measurement_id — for importing into a database or joining in R / Python.',
-    dl_th_file: 'File', dl_th_row: 'One row per', dl_th_cols: 'Key columns', dl_th_rows: 'Rows', dl_th_size: 'Size', dl_th_hash: 'SHA-256',
-    dl_custom: 'Export filtered results', dl_custom_text: 'After filtering on the Search page, use “Export” above the results: CSV, TSV, Excel or JSON; long or wide; all results or selected rows; and pick the columns.',
-    dl_go_search: 'Go to Search →', dl_fields: 'What each column means:', dl_fields_link: 'Help · Fields', dl_history: 'Previous versions',
-    dl_history_text: 'The data of every version are kept in the GitHub repository history and can be retrieved by date.',
-    dl_verify: 'You can verify a download with its SHA-256, e.g. on Windows:', dl_manifest_fail: 'Could not load the file list: {e}',
+    dl_th_file: 'File', dl_th_row: 'One row per', dl_th_cols: 'Key columns', dl_th_rows: 'Rows', dl_th_size: 'Size',
+    dl_fields: 'What each column means:', dl_fields_link: 'Help · Fields',
+    dl_manifest_fail: 'Could not load the file list: {e}',
     tb_papers: 'paper', tb_samples: 'sample', tb_ingredients: 'ingredient', tb_treatments: 'sample treatment step', tb_treatment_params: 'treatment parameter',
     tb_measurements: 'value', tb_measurement_conditions: 'measurement condition', tb_methods: 'test method', tb_flat_measurements: 'value, with all sample, treatment and paper fields',
     cl_title: 'Changelog', cl_sub: 'Main changes in each version.',
@@ -365,6 +365,7 @@ window.PDF_TEXT = (() => {
         <tr><td>value / value_text / sd / unit</td><td>数值 / 原文写法（如「&lt;0.1」）/ 标准差 / 原文单位</td></tr>
         <tr><td>value_std / unit_std</td><td>换成标准单位后的数值和单位；换不了的留空</td></tr>
         <tr><td>multiplier</td><td>读图时纵轴的倍率（如 10^3）；value 是刻度读数，没有乘倍率</td></tr>
+        <tr><td>significance</td><td>原文作者标的显著性字母（a、b、ab…）：只在同一篇论文、同一张表或图里的样品之间比较，字母相同表示差异不显著；不同论文之间不可比</td></tr>
         <tr><td>conditions_all / measurement_ph</td><td>测定条件（pH、温度、浓度、时间……）/ 写成单个数的测定 pH</td></tr>
         <tr><td>test_method / method_summary</td><td>测试方法名称 / 英文方法概述（方法名称、出处、关键参数、仪器）</td></tr>
         <tr><td>data_origin / source_type</td><td>作者原值或来源于模型 / 数值出自作者表格、正文还是图</td></tr></tbody></table>`],
@@ -379,7 +380,31 @@ window.PDF_TEXT = (() => {
         <h3>「模型」的数值能直接用吗？</h3><p>可以用来比较趋势和量级，但它是从图里读出的估计值；需要精确数值时请回到原文。</p>
         <h3>为什么有的数值没有标准单位？</h3><p>原文单位写法认不出、基准不同或需要额外信息（如分子量）才能换算时，不做换算，只保留原单位。</p>
         <h3>数据会更新吗？</h3><p>会分批加入更多出版商的论文；每次更新都写在<a href="#/changelog">更新日志</a>里。</p>
-        <h3>能下载全部数据吗？</h3><p>能，见<a href="#/download">下载</a>页：完整数据库按表分别下载，或按性质下载平铺表（一行一个数值，Excel 直接打开），都附 SHA-256 校验值。</p>`],
+        <h3>能下载全部数据吗？</h3><p>能，见<a href="#/download">下载</a>页：完整数据库按表分别下载，或按性质下载平铺表（一行一个数值，Excel 直接打开）。</p>`],
+      ['ai', '给 AI 用', `<p>这一节写给替你查数据、做分析的 AI（Claude Code、ChatGPT、Cursor 等）和脚本。整个数据库都是静态文件，不用注册，也不用 API key。网页要靠 JavaScript 才能显示，AI 直接抓网页看不到内容，所以同样的说明另有一份纯文本：<a href="llms.txt" target="_blank" rel="noopener">llms.txt</a>。</p>
+        <h3>把这个库交给你的 AI</h3><p>把下面这段话发给你的 AI：</p>
+        <pre data-copy-pre>Use the PDF protein functionality database at {BASE} . Read {BASE}llms.txt first, then download the files listed in {BASE}data/download/manifest.json . Values whose data_origin contains "model-derived" are estimates read from figures. Give the DOI for every number you report.</pre>
+        <h3>入口：manifest.json</h3><p><code>data/download/manifest.json</code> 列出全部下载文件，每个文件有 <code>path</code>、<code>rows</code>、<code>cols</code>、<code>bytes</code> 和 <code>sha256</code>（下载后核对文件是否完整）；<code>release</code> 是版本号和日期，版本号变了再重新下载。</p>
+        <h3>用哪个文件</h3><ul><li>只要一项性质、每行信息齐全：<code>flat_&lt;property&gt;.csv.zip</code>，property 是 solubility、emulsifying、foaming、gelling、water_holding、oil_holding、particle_size、zeta_potential、pdi、sulfhydryl、disulfide、surface_hydrophobicity、turbidity、degree_of_hydrolysis、free_amino、encapsulation、antioxidant。</li>
+          <li>整个库、自己做关联：8 张关系表，用 <code>doi</code> → <code>sample_id</code>（<code>doi#N</code>）→ <code>measurement_id</code> 关联；数值的测试方法按 <code>doi</code> + <code>method_id</code> 对到 <code>methods.csv</code>。</li></ul>
+        <h3>读数规则</h3><ul>
+          <li>每个 zip 里是一个 UTF-8（带 BOM）CSV，另附 README.md 和 LICENSE-DATA.md。zip 里不止一个文件，pandas 不能直接读，要用 zipfile 打开 CSV（见下面的例子）。</li>
+          <li>跨论文比较用 <code>value_std</code> + <code>unit_std</code>。<code>value</code> 是原文单位下的数；<code>multiplier</code> 不为空时，<code>value</code> 是图上的刻度读数，要自己乘倍率。</li>
+          <li><code>data_origin</code> 含 <code>model-derived</code> 的是模型从图里读出的估计值，含 <code>author-reported</code> 的是作者在表格或正文里给的原值。</li>
+          <li><code>significance</code>（显著性字母）只在同一篇论文、同一张表或图里有意义，不能跨论文比较。</li>
+          <li>分类列是中文。要英文请用 <code>property</code>、<code>protein_source_std</code>、<code>protein_form_std</code>、<code>treatment_types</code>、<code>test_method_en</code>、<code>method_summary</code>；一格里有多个值时用 <code> | </code> 隔开。</li>
+          <li>库里没有论文原文句子。报告的每个数都要附 DOI（<code>https://doi.org/&lt;doi&gt;</code>），重要结论请对照原文。</li></ul>
+        <h3>Python 例子</h3><pre data-copy-pre>import io, zipfile, urllib.request
+import pandas as pd
+
+BASE = '{BASE}data/download/'
+raw = urllib.request.urlopen(BASE + 'flat_solubility.csv.zip').read()
+z = zipfile.ZipFile(io.BytesIO(raw))
+df = pd.read_csv(z.open('flat_solubility.csv'), encoding='utf-8-sig', low_memory=False)
+df['is_model'] = df['data_origin'].str.contains('model-derived')
+soy = df[df['protein_source_std'].str.contains('Soybean', na=False)]
+print(soy.groupby('unit_std')['value_std'].describe())</pre>
+        <h3>许可与引用</h3><p>数据许可 CC BY 4.0：注明本数据库（网址和版本号），并引用数据所在的原始论文。</p>`],
       ['feedback', '反馈与补充数据', `<p>发现数据错误、想补充论文或建议新功能，欢迎在本网站的 GitHub 仓库提交 Issue（网站发布在 GitHub 上时，页面右上角有 GitHub 链接），写明 DOI 和样品编号。</p>`],
       ['cite', '如何引用', `<p>PDF 的论文正在准备中。在那之前，请引用本网站网址（注明访问日期和版本号），并引用数据所在的原始论文（每条数据都附 DOI）。数据许可为 CC BY 4.0。</p>`],
     ],
@@ -414,6 +439,7 @@ window.PDF_TEXT = (() => {
         <tr><td>value / value_text / sd / unit</td><td>Value / as written (e.g. “&lt;0.1”) / standard deviation / original unit</td></tr>
         <tr><td>value_std / unit_std</td><td>Value and unit converted to the standard unit; empty where not convertible</td></tr>
         <tr><td>multiplier</td><td>Axis multiplier when read from a figure (e.g. 10^3); value is the axis reading, not multiplied</td></tr>
+        <tr><td>significance</td><td>The authors’ significance letters (a, b, ab …): they compare samples only within the same table or figure of the same paper; values sharing a letter are not significantly different. Not comparable across papers.</td></tr>
         <tr><td>conditions_all / measurement_ph</td><td>Measurement conditions (pH, temperature, concentration, time…) / measurement pH as a single number</td></tr>
         <tr><td>test_method / method_summary</td><td>Test method / English method summary (method, reference, key parameters, instrument)</td></tr>
         <tr><td>data_origin / source_type</td><td>Author-reported or model-derived / whether the value came from an author table, the text or a figure</td></tr></tbody></table>`],
@@ -428,7 +454,31 @@ window.PDF_TEXT = (() => {
         <h3>Can I use model-derived values?</h3><p>Yes for trends and orders of magnitude, but they are estimates read from figures; go back to the article when you need exact numbers.</p>
         <h3>Why do some values have no standard unit?</h3><p>When the unit is unrecognised, on a different basis or needs extra information (e.g. molecular weight), it is not converted and only the original unit is kept.</p>
         <h3>Will the data be updated?</h3><p>Yes — papers from more publishers are added in batches; every update is listed in the <a href="#/changelog">changelog</a>.</p>
-        <h3>Can I download everything?</h3><p>Yes, see <a href="#/download">Download</a>: the complete database table by table, or flat tables by property (one row per value, opens in Excel), with SHA-256 checksums.</p>`],
+        <h3>Can I download everything?</h3><p>Yes, see <a href="#/download">Download</a>: the complete database table by table, or flat tables by property (one row per value, opens in Excel).</p>`],
+      ['ai', 'For AI agents', `<p>This section is for AI agents (Claude Code, ChatGPT, Cursor …) and scripts that look up or analyse data on a user’s behalf. The whole database is static files: no sign-up and no API key. This website needs JavaScript, so an agent fetching the page sees no content; the same instructions are available as plain text in <a href="llms.txt" target="_blank" rel="noopener">llms.txt</a>.</p>
+        <h3>Hand the database to your AI</h3><p>Send this to your AI:</p>
+        <pre data-copy-pre>Use the PDF protein functionality database at {BASE} . Read {BASE}llms.txt first, then download the files listed in {BASE}data/download/manifest.json . Values whose data_origin contains "model-derived" are estimates read from figures. Give the DOI for every number you report.</pre>
+        <h3>Entry point: manifest.json</h3><p><code>data/download/manifest.json</code> lists every download file with its <code>path</code>, <code>rows</code>, <code>cols</code>, <code>bytes</code> and <code>sha256</code> (to check a download is complete); <code>release</code> gives the version and date — download again when the version changes.</p>
+        <h3>Which file to use</h3><ul><li>One property, with everything in each row: <code>flat_&lt;property&gt;.csv.zip</code>, where property is one of solubility, emulsifying, foaming, gelling, water_holding, oil_holding, particle_size, zeta_potential, pdi, sulfhydryl, disulfide, surface_hydrophobicity, turbidity, degree_of_hydrolysis, free_amino, encapsulation, antioxidant.</li>
+          <li>The whole database, joined yourself: the 8 relational tables, linked by <code>doi</code> → <code>sample_id</code> (<code>doi#N</code>) → <code>measurement_id</code>; a value’s test method is the row in <code>methods.csv</code> with the same <code>doi</code> and <code>method_id</code>.</li></ul>
+        <h3>Rules for reading the data</h3><ul>
+          <li>Each zip holds one UTF-8 CSV (with BOM) plus README.md and LICENSE-DATA.md. Because there is more than one file, pandas cannot read the zip directly; open the CSV with zipfile (see the example).</li>
+          <li>Compare across papers with <code>value_std</code> + <code>unit_std</code>. <code>value</code> is in the article’s unit; when <code>multiplier</code> is not empty, <code>value</code> is the axis reading and must be multiplied.</li>
+          <li><code>data_origin</code> containing <code>model-derived</code> marks estimates read from figures by a model; <code>author-reported</code> marks values from the authors’ tables or text.</li>
+          <li><code>significance</code> letters are only meaningful within one table or figure of one paper; never compare them across papers.</li>
+          <li>Category columns are in Chinese. For English use <code>property</code>, <code>protein_source_std</code>, <code>protein_form_std</code>, <code>treatment_types</code>, <code>test_method_en</code> and <code>method_summary</code>; multiple values in one cell are separated by <code> | </code>.</li>
+          <li>No text from the articles is included. Give the DOI (<code>https://doi.org/&lt;doi&gt;</code>) for every number you report, and check important conclusions against the article.</li></ul>
+        <h3>Python example</h3><pre data-copy-pre>import io, zipfile, urllib.request
+import pandas as pd
+
+BASE = '{BASE}data/download/'
+raw = urllib.request.urlopen(BASE + 'flat_solubility.csv.zip').read()
+z = zipfile.ZipFile(io.BytesIO(raw))
+df = pd.read_csv(z.open('flat_solubility.csv'), encoding='utf-8-sig', low_memory=False)
+df['is_model'] = df['data_origin'].str.contains('model-derived')
+soy = df[df['protein_source_std'].str.contains('Soybean', na=False)]
+print(soy.groupby('unit_std')['value_std'].describe())</pre>
+        <h3>Licence and citation</h3><p>Data are licensed CC BY 4.0: credit this database (URL and version) and cite the original articles the data come from.</p>`],
       ['feedback', 'Feedback and contributions', `<p>To report an error, contribute papers or suggest a feature, please open an issue in this website’s GitHub repository (when the site is published on GitHub there is a GitHub link at the top right), giving the DOI and sample number.</p>`],
       ['cite', 'How to cite', `<p>A paper describing PDF is in preparation. Until then, please cite this website (with access date and version) and the original articles (every record has a DOI). Data are licensed CC BY 4.0.</p>`],
     ],

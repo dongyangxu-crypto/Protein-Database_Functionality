@@ -247,7 +247,7 @@
     const label = (p) => { let s = D.doi[p].split('/').slice(1).join('/'); if (s.startsWith('acs.')) s = s.slice(4); return s; };
     setRedraw(() => PFDCharts.strip($('pp-chart'), groups.map(([p, arr]) => ({ key: String(p), label: label(p), sub: 'n = ' + arr.length,
       values: arr.map((i) => ({ v: D.veff[i], m: C.vo[i] & 1, tip: `<b>${esc(PFDCharts.fmt(D.veff[i]))} ${esc(unitLbl)}</b>${C.vo[i] & 1 ? ' · ' + esc(t('badge_model')) : ''}<br>${esc(A.srcOf(C.vs[i]).map(A.srcLabel).join(' · '))}<br>${esc(D.doi[p])}` })) })),
-      { yLabel: `${A.propName(pc)}${unitLbl ? ' (' + unitLbl + ')' : ''}`, median: opt.median, byOrigin: opt.origin, empty: t('pp_none'), onClick: (k) => { location.hash = A.paperHref(+k); } }));
+      { yLabel: `${A.propName(pc)}${unit >= 0 && d.unit[unit] ? ' (' + unitLbl + ')' : ''}`, median: opt.median, byOrigin: opt.origin, empty: t('pp_none'), onClick: (k) => { location.hash = A.paperHref(+k); } }));
     const go = (o) => { location.hash = self(o); };
     $('pp-prop').onchange = (e) => { const h = new URLSearchParams(); h.set('prop', e.target.value); if (srcTok) h.set('src', srcTok); if (ttTok) h.set('tt', ttTok); location.hash = '#/property?' + h; };
     $('pp-src').onchange = (e) => { const h = new URLSearchParams(); h.set('prop', D.meta.props[pc]); if (e.target.value) h.set('src', e.target.value); if (ttTok) h.set('tt', ttTok); location.hash = '#/property?' + h; };
@@ -305,34 +305,32 @@
       if (!res.ok) throw new Error('HTTP ' + res.status);
       man = await res.json();
     } catch (e) { $('dl-body').innerHTML = `<div class="card empty-state">${esc(t('dl_manifest_fail', { e: e.message || e }))}</div>`; return; }
-    const hash = (h) => `<span class="hash">${esc(h)}</span><button class="copy" type="button" data-copy="${esc(h)}">${esc(t('copy'))}</button>`;
-    const repo = A.repoUrl(), props = man.props || [], all = [...man.files, ...props];
+    const props = man.props || [], all = [...man.files, ...props];
     const pname = (p) => (A.X.PROP_NAMES[p] || [p, p])[A.lang() === 'zh' ? 0 : 1];
     const btn = (f) => `<a class="btn ghost small" href="${esc(f.path)}" download>${ic('download')}${esc(t('dl_btn'))}</a>`;
     // 11-11 起没有「全部数据」总包（七家合库后约 200 MB，超过 GitHub 单文件上限）：平铺表按性质分文件，关系表各一个文件
-    $('dl-body').innerHTML = `<p class="dim">${esc(t('h_ver', { v: rel.version || '' }))} · ${esc(t('h_built', { d: man.built }))} · ${esc(t('dl_total', { n: fmt(all.length), s: A.bytes(all.reduce((a, f) => a + f.bytes, 0)) }))}</p>
-      ${props.length ? `<section class="card mt"><div class="card-head"><h3>${esc(t('dl_flat'))}</h3></div><div class="card-body"><p class="hint" style="margin-top:0">${esc(t('dl_flat_sub'))}</p><div class="mini-wrap"><table class="mini"><thead><tr><th>${esc(t('dl_th_file'))}</th><th>${esc(t('dl_th_prop'))}</th><th>${esc(t('dl_th_rows'))}</th><th>${esc(t('dl_th_size'))}</th><th>${esc(t('dl_th_hash'))}</th><th></th></tr></thead>
-        <tbody>${props.map((f) => `<tr><td><b>flat_${esc(f.property)}.csv</b><div class="dim">${esc(t('ex_cols_all', { n: f.cols }))}</div></td><td>${esc(pname(f.property))}</td><td class="tnum">${fmt(f.rows)}</td><td class="tnum">${esc(A.bytes(f.bytes))}</td><td style="max-width:230px">${hash(f.sha256)}</td><td>${btn(f)}</td></tr>`).join('')}</tbody></table></div></div></section>` : ''}
-      <section class="card mt"><div class="card-head"><h3>${esc(t('dl_tables'))}</h3></div><div class="card-body"><p class="hint" style="margin-top:0">${esc(t('dl_tables_sub'))}</p><div class="mini-wrap"><table class="mini"><thead><tr><th>${esc(t('dl_th_file'))}</th><th>${esc(t('dl_th_row'))}</th><th>${esc(t('dl_th_cols'))}</th><th>${esc(t('dl_th_rows'))}</th><th>${esc(t('dl_th_size'))}</th><th>${esc(t('dl_th_hash'))}</th><th></th></tr></thead>
-        <tbody>${man.files.map((f) => `<tr><td><b>${esc(f.table)}.csv</b><div class="dim">${esc(t('ex_cols_all', { n: f.cols }))}</div></td><td>${esc(t('tb_' + f.table))}</td><td class="dim">${esc(KEY_COLS[f.table] || '')}</td><td class="tnum">${fmt(f.rows)}</td><td class="tnum">${esc(A.bytes(f.bytes))}</td><td style="max-width:230px">${hash(f.sha256)}</td><td>${btn(f)}</td></tr>`).join('')}</tbody></table></div>
-        <p class="hint">${esc(t('dl_fields'))} <a href="#/help?s=fields">${esc(t('dl_fields_link'))}</a></p></div></section>
-      <div class="grid-2 mt">
-        <section class="card"><div class="card-head"><h3>${esc(t('dl_custom'))}</h3></div><div class="card-body"><p class="cite-box">${esc(t('dl_custom_text'))}</p><div style="margin-top:10px"><a class="btn small" href="#/search">${esc(t('dl_go_search'))}</a></div></div></section>
-        <section class="card"><div class="card-head"><h3>${esc(t('dl_history'))}</h3></div><div class="card-body"><ul class="ver-list">${(D.meta.releases || []).map((r) => `<li><b>${esc(r.version)}</b><span>${esc(r.date)}</span><div>${esc(clip(r[A.lang()] || r.zh, 80))}</div></li>`).join('')}</ul>
-          <p class="hint">${esc(t('dl_history_text'))}${repo ? ` <a href="${esc(repo)}/commits/main" target="_blank" rel="noopener">GitHub</a>` : ''}</p>
-          <p class="hint">${esc(t('dl_verify'))} <code>certutil -hashfile measurements.csv.zip SHA256</code> · macOS / Linux: <code>shasum -a 256 measurements.csv.zip</code></p></div></section>
-      </div>`;
-    $('dl-body').onclick = async (e) => { const b = e.target.closest('[data-copy]'); if (b && await A.copyText(b.dataset.copy)) toast(t('copied')); };
+    $('dl-body').innerHTML = `<p class="dim">${esc(t('h_ver', { v: rel.version || '' }))} · ${esc(t('h_built', { d: man.built }))} · ${esc(t('dl_total', { n: fmt(all.length), s: A.bytes(all.reduce((a, f) => a + f.bytes, 0)) }))} · <a href="#/changelog">${esc(t('nav_changelog'))}</a></p>
+      ${props.length ? `<section class="card mt"><div class="card-head"><h3>${esc(t('dl_flat'))}</h3></div><div class="card-body"><p class="hint" style="margin-top:0">${esc(t('dl_flat_sub'))}</p><div class="mini-wrap"><table class="mini"><thead><tr><th>${esc(t('dl_th_file'))}</th><th>${esc(t('dl_th_prop'))}</th><th>${esc(t('dl_th_rows'))}</th><th>${esc(t('dl_th_size'))}</th><th></th></tr></thead>
+        <tbody>${props.map((f) => `<tr><td><b>flat_${esc(f.property)}.csv</b><div class="dim">${esc(t('ex_cols_all', { n: f.cols }))}</div></td><td>${esc(pname(f.property))}</td><td class="tnum">${fmt(f.rows)}</td><td class="tnum">${esc(A.bytes(f.bytes))}</td><td>${btn(f)}</td></tr>`).join('')}</tbody></table></div></div></section>` : ''}
+      <section class="card mt"><div class="card-head"><h3>${esc(t('dl_tables'))}</h3></div><div class="card-body"><p class="hint" style="margin-top:0">${esc(t('dl_tables_sub'))}</p><div class="mini-wrap"><table class="mini"><thead><tr><th>${esc(t('dl_th_file'))}</th><th>${esc(t('dl_th_row'))}</th><th>${esc(t('dl_th_cols'))}</th><th>${esc(t('dl_th_rows'))}</th><th>${esc(t('dl_th_size'))}</th><th></th></tr></thead>
+        <tbody>${man.files.map((f) => `<tr><td><b>${esc(f.table)}.csv</b><div class="dim">${esc(t('ex_cols_all', { n: f.cols }))}</div></td><td>${esc(t('tb_' + f.table))}</td><td class="dim">${esc(KEY_COLS[f.table] || '')}</td><td class="tnum">${fmt(f.rows)}</td><td class="tnum">${esc(A.bytes(f.bytes))}</td><td>${btn(f)}</td></tr>`).join('')}</tbody></table></div>
+        <p class="hint">${esc(t('dl_fields'))} <a href="#/help?s=fields">${esc(t('dl_fields_link'))}</a></p></div></section>`;
   }
 
   // ================================================================ 帮助、更新日志 ==
   function renderHelp(params) {
-    const el = $('view-help'), secs = A.X.HELP[A.lang()] || A.X.HELP.zh;
+    const el = $('view-help'), base = location.origin + location.pathname.replace(/[^/]*$/, '');
+    const secs = (A.X.HELP[A.lang()] || A.X.HELP.zh).map(([id, title, html]) => [id, title, html.split('{BASE}').join(esc(base))]);
     el.innerHTML = `<div class="wrap page"><div class="page-title">${ic('help')}<h1>${esc(t('nav_help'))}</h1></div>
       <div class="help mt"><nav class="card toc" aria-label="${esc(t('nav_help'))}">${secs.map(([id, title]) => `<a href="#/help?s=${id}">${esc(title)}</a>`).join('')}<a href="#/changelog">${esc(t('nav_changelog'))}</a></nav>
         <div class="card help-body">${secs.map(([id, title, html]) => `<section id="help-${id}"><h2>${esc(title)}</h2>${html}</section>`).join('')}</div></div></div>`;
     const s = params.get('s');
     if (s && $('help-' + s)) setTimeout(() => $('help-' + s).scrollIntoView({ block: 'start' }), 0);
+    el.querySelectorAll('pre[data-copy-pre]').forEach((pre) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'btn ghost small pre-copy'; b.textContent = t('copy');
+      b.onclick = async () => { if (await A.copyText(pre.textContent)) toast(t('copied')); };
+      pre.before(b);
+    });
     redraw = null;
   }
   function renderChangelog() {

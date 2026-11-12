@@ -74,10 +74,10 @@
             <div class="menu"><button class="btn small" type="button" id="export-btn" aria-expanded="false">${ic('download')}${esc(t('export'))}</button><div class="menu-pop export-pop" id="export-pop" hidden></div></div>
           </div>
         </div>
-        <div class="notice res-notice">${t('notice_short')}</div>
         <section class="chart-panel" id="chart-panel" hidden></section>
         <div class="table-wrap"><table id="tbl"><thead id="thead"></thead><tbody id="rows"><tr><td class="loading">${esc(t('loading'))}</td></tr></tbody></table></div>
         <nav class="pager" id="pager" aria-label="Pages"></nav>
+        <p class="hint sig-note" id="sig-note" hidden></p>
       </section></div>`;
     A.attachAC($('q'), {
       onPick: (it) => { $('q').value = ''; S.q = ''; applyPick(it); },
@@ -103,6 +103,7 @@
     const codes = [];
     for (let c = 0; c < f.n; c++) if (f.count[c] || S.sel[f.key].has(c)) codes.push(c);
     if (!f.fixed) codes.sort((a, b) => f.count[b] - f.count[a] || f.label(a).localeCompare(f.label(b)));
+    if (f.last !== undefined && codes.includes(f.last)) codes.push(codes.splice(codes.indexOf(f.last), 1)[0]);   // 「其他」放最后
     return codes;
   }
   function facetBlock(f) {
@@ -281,7 +282,7 @@
     const sd = VX(i, 'sd'), unit = VX(i, 'unit'), sig = VX(i, 'sig');
     if (sd) h += ` ± ${esc(sd)}`;
     if (unit) h += ` ${esc(unit)}`;
-    if (sig) h += `<span class="sig">${esc(sig)}</span>`;
+    if (sig) h += `<span class="sig" title="${esc(t('sig_tip'))}">${esc(sig)}</span>`;
     if (badge && D.c.vo[i] & 1) h += `<span class="badge model" title="${esc(t('badge_model_tip'))}">${esc(t('badge_model'))}</span>`;
     const extra = [], mul = VX(i, 'mul'), lo = VX(i, 'lo'), hi = VX(i, 'hi'), vstd = VX(i, 'vstd'), ustd = VX(i, 'ustd');
     if (mul) extra.push(t('axis', { m: esc(mul) }));
@@ -290,6 +291,7 @@
     if (extra.length) h += `<div class="extra">${extra.join(' · ')}</div>`;
     return h;
   }
+  const outNote = (rr) => (rr && rr.out ? ' ' + t('c_out', { n: fmt(rr.out), a: PFDCharts.fmt(rr.min), b: PFDCharts.fmt(rr.max) }) : '');
   const addBtn = (key, tok, label, cls = 'chip add') => `<button class="${cls}" type="button" data-addf="${key}" data-tok="${esc(tok)}" title="${esc(t('add_filter'))}">${esc(label)}</button>`;
   function methodHTML(i, clampIt) {
     const parts = [], m = D.c.vm[i];
@@ -310,7 +312,7 @@
       if (VX(i, 'x')) more.push(t('x', { x: esc(clip(VX(i, 'x') + (VX(i, 'xu') ? ' ' + VX(i, 'xu') : ''), 30)) }));
     }
     if (more.length) h += `<div class="dim">${more.join(' · ')}</div>`;
-    if (withDoi) h += `<div><a href="${A.paperHref(p)}" title="${esc(PX(p, 'title'))}">${esc(clip(D.doi[p], 30))}</a></div>`;
+    if (withDoi) h += `<div><a href="${A.doiHref(p)}" target="_blank" rel="noopener" title="${esc(t('open_doi_tip', { t: PX(p, 'title') }))}">${esc(clip(D.doi[p], 30))} ↗</a></div>`;
     return h;
   }
   function proteinHTML(s) {
@@ -363,6 +365,8 @@
     const slice = Array.from(units.slice(S.page * S.size, S.page * S.size + S.size));
     const ncol = S.view === 'v' ? shownCols().length + 2 : S.view === 's' ? 7 : 5;
     renderPager(nPages);
+    const sn = $('sig-note');
+    if (sn) sn.hidden = true;
     if (!slice.length) { $('rows').innerHTML = `<tr><td colspan="${ncol}" class="empty">${esc(t('empty'))}</td></tr>`; renderRelax(ncol); return; }
     const need = S.view === 'v' ? slice.map((i) => A.chunkOf(4, i)) : S.view === 's' ? slice.map((s) => A.chunkOf(2, s)) : slice.map((p) => A.chunkOf(0, p));
     if (need.some((k) => !D.chunkData[k])) {
@@ -377,6 +381,7 @@
       $('rows').innerHTML = slice.map((i) => { const open = UI.open.has(i);
         return `<tr class="row${open ? ' open' : ''}${sel.has(i) ? ' sel' : ''}" data-i="${i}">${chk(i)}<td class="col-exp"><button class="exp-btn" type="button" data-exp="${i}" aria-expanded="${open}" aria-label="${esc(t('expand'))}">${open ? '−' : '+'}</button></td>
           ${cols.map((c) => `<td>${cellHTML(c.key, i)}</td>`).join('')}</tr>${open ? expandHTML(i, ncol) : ''}`; }).join('');
+      if (sn && slice.some((i) => VX(i, 'sig'))) { sn.innerHTML = `<span class="sig">a, b</span> ${esc(t('sig_note'))}`; sn.hidden = false; }
     } else if (S.view === 's') {
       const L = lists();
       $('rows').innerHTML = slice.map((s) => `<tr class="row${sel.has(s) ? ' sel' : ''}">${chk(s)}<td><a class="strong clamp c2" href="${A.sampleHref(s)}">${esc(A.sampleName(s))}</a><div class="dim">${esc(t('sample_n', { n: A.sampleNo(s) }))}</div></td>
@@ -457,11 +462,11 @@
         <span class="lbl-inline" style="margin-left:auto">${esc(t('c_dl'))} ${A.chartDl('chart-box')}</span></div>
       ${UI.chartType === 'scatter' ? `<div class="legend" style="padding-top:10px"><span><i style="background:var(--series-1)"></i>${esc(t('o_author'))}</span><span><i class="ring2"></i>${esc(t('o_model'))}</span></div>` : ''}
       <div class="chart-box" id="chart-box"></div><div class="chart-note" id="chart-note"></div><div id="chart-table"></div>`;
-    const box = $('chart-box'), yLbl = `${A.propName(UI.chartProp)}${unitLbl ? ' (' + unitLbl + ')' : ''}`, total = pc.get(UI.chartProp);
+    const box = $('chart-box'), yLbl = `${A.propName(UI.chartProp)}${D.dict.unit[UI.chartUnit] ? ' (' + unitLbl + ')' : ''}`, total = pc.get(UI.chartProp);
     let table = null;
     if (UI.chartType === 'hist') {
-      PFDCharts.histogram(box, rows.map((i) => D.veff[i]), { log: UI.chartLog, xLabel: yLbl, yLabel: t('c_count'), empty: t('c_none'), countFmt: (n) => t('c_count_fmt', { n: fmt(n) }) });
-      $('chart-note').textContent = t('c_note', { n: fmt(rows.length), u: unitLbl, m: fmt(total) });
+      const rr = PFDCharts.histogram(box, rows.map((i) => D.veff[i]), { log: UI.chartLog, xLabel: yLbl, yLabel: t('c_count'), empty: t('c_none'), countFmt: (n) => t('c_count_fmt', { n: fmt(n) }) });
+      $('chart-note').textContent = t('c_note', { n: fmt(rows.length), u: unitLbl, m: fmt(total) }) + outNote(rr);
     } else if (UI.chartType === 'box') {
       const g = new Map();
       for (const i of rows) for (const [k, label] of GROUPS[UI.chartGroup](C.vs[i], i)) { if (!g.has(k)) g.set(k, { key: k, label, values: [] }); g.get(k).values.push(D.veff[i]); }
@@ -481,8 +486,8 @@
         kept++;
         pts.push({ x, y: D.veff[i], s: C.vo[i] & 1, tip: `<b>${esc(PFDCharts.fmt(D.veff[i]))} ${esc(unitLbl)}</b><br>${esc(t(UI.chartX === 'ph' ? 'x_ph' : 'x_temp'))}: ${esc(PFDCharts.fmt(x))}<br>${esc(A.srcOf(s).map(A.srcLabel).join(' · '))}<br>${esc(D.doi[C.sp[s]])}` });
       }
-      PFDCharts.scatter(box, pts, { logY: UI.chartLog, xLabel: t(UI.chartX === 'ph' ? 'x_ph' : 'x_temp'), yLabel: yLbl, empty: t('c_none') });
-      $('chart-note').textContent = t('c_note_sc', { n: fmt(kept), u: unitLbl, cap: fmt(SC_CAP) });
+      const rr = PFDCharts.scatter(box, pts, { logY: UI.chartLog, xLabel: t(UI.chartX === 'ph' ? 'x_ph' : 'x_temp'), yLabel: yLbl, empty: t('c_none') });
+      $('chart-note').textContent = t('c_note_sc', { n: fmt(kept), u: unitLbl, cap: fmt(SC_CAP) }) + outNote(rr);
     }
     if (UI.chartTable && table) {
       $('chart-table').innerHTML = `<div class="card-body"><div class="mini-wrap"><table class="data-table"><thead><tr>${table[0].map((h) => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${table.slice(1).map((r) => `<tr>${r.map((v, k) => `<td class="${k ? 'n' : ''}">${esc(k ? PFDCharts.fmt(v) : v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`;
@@ -610,7 +615,12 @@
       if ((b = q('[data-more]'))) { const k = b.dataset.more; if (UI.more.has(k)) UI.more.delete(k); else UI.more.add(k); renderFacetBlocks(); return; }
       if ((b = q('[data-fclear]'))) { const f = A.facetByKey(b.dataset.fclear); S.sel[f.key] = new Set(); f.mask.fill(0); refresh(); return; }
       if ((b = q('[data-group]'))) { A.removeGroup(b.dataset.group); if (b.dataset.group === 'adv') UI.draft = null; syncInputs(); refresh(); return; }
-      if ((b = q('[data-addf]'))) { const f = A.facetByKey(b.dataset.addf), c = f.fromTok.get(b.dataset.tok); if (c !== undefined && !S.sel[f.key].has(c)) toggleFacet(f.key, c, true); return; }
+      if ((b = q('[data-addf]'))) {
+        const f = A.facetByKey(b.dataset.addf), c = f.fromTok.get(b.dataset.tok), name = b.textContent.trim();
+        if (c === undefined) return;
+        if (S.sel[f.key].has(c)) { toast(t('filter_already', { f: name })); return; }
+        toggleFacet(f.key, c, true); toast(t('filter_added', { f: name })); return;
+      }
       if ((b = q('[data-view]'))) { S.view = b.dataset.view; S.page = 0; renderHead(); renderBasketBtn(); history.replaceState(null, '', A.searchHref(A.searchParams())); renderRows(); return; }
       if ((b = q('th[data-sort]'))) {
         const k = b.dataset.sort;

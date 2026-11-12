@@ -1,0 +1,48 @@
+# PDF · Protein Database of Functionality
+
+> Database of food protein functional properties extracted from published journal articles. Each value of 17 properties (solubility, emulsifying, foaming, gelling, water/oil holding, particle size, ζ-potential, PDI, sulfhydryl, disulfide, surface hydrophobicity, turbidity, degree of hydrolysis, free amino groups, encapsulation, antioxidant activity) is linked to a sample (protein source, composition, ingredients), its sample treatment and the test method. Data licence CC BY 4.0. Built by the AI4FH Lab, University College Dublin.
+
+This file is for AI agents and scripts. The website (index.html) needs JavaScript and shows nothing to a plain HTTP fetch; all data are static files listed below. No sign-up, no API key.
+
+Site root: https://dzjxzyd.github.io/Protein-Database_Functionality/ (all paths below are relative to it)
+Source repository: https://github.com/dzjxzyd/Protein-Database_Functionality
+
+## Entry point
+
+- `data/download/manifest.json`: `release` (version, date, release notes), `built`, `files` (8 relational tables) and `props` (17 flat tables). Each entry has `path`, `rows`, `cols`, `bytes` and `sha256`. Check `sha256` after downloading; download again when `release.version` changes.
+
+## Which file to use
+
+- One property, everything in each row: `data/download/flat_<property>.csv.zip`, property = solubility, emulsifying, foaming, gelling, water_holding, oil_holding, particle_size, zeta_potential, pdi, sulfhydryl, disulfide, surface_hydrophobicity, turbidity, degree_of_hydrolysis, free_amino, encapsulation, antioxidant. One row per value, 61 columns (sample, ingredients, treatment, conditions, test method, paper).
+- Whole database, joined yourself: `data/download/<table>.csv.zip` for papers, samples, ingredients, treatments, treatment_params, measurements, measurement_conditions, methods. Keys: `doi` → `sample_id` (`doi#N`) → `measurement_id`. A value's test method is the row of `methods.csv` with the same `doi` and `method_id`.
+
+## Rules for reading the data
+
+- Each zip holds one UTF-8 CSV with BOM plus README.md and LICENSE-DATA.md. pandas cannot read the zip directly (more than one file inside); open the CSV with zipfile.
+- Compare across papers with `value_std` + `unit_std` (standard unit per property; empty when not convertible). `value` is in the article's unit (`unit`). If `multiplier` is not empty (e.g. 10^3), `value` is the axis reading and must be multiplied by it. Non-numeric entries (e.g. "<0.1") are in `value_text`.
+- `data_origin` contains `model-derived` for values a model read from figures (estimates; `source_item` names the figure, `series` and `x` locate the point) and `author-reported` for values from the authors' tables or text. About 64% of values are model-derived.
+- `significance` holds the authors' significance letters (a, b, ab …). They compare samples only within the same table or figure of the same paper (values sharing a letter are not significantly different). Never compare letters across papers.
+- `sd` is the standard deviation as reported; `err_low` / `err_high` are the ends of an asymmetric error bar where one was given.
+- Measurement conditions (pH, temperature, concentration, time …) are in `conditions_all` and the `cond_*` columns; they are not the sample treatment. Sample treatment (heating, ultrasound, hydrolysis …) is in `treatment_summary`, `treatment_types` and `treatments.csv`.
+- `measure_name` is the paper's own label for the measurement (e.g. EAI, ESI, WHC). Some table-derived labels end with a footnote letter from the table header (e.g. "WAIc" = WAI with footnote c).
+- Category columns are in Chinese. For English use `property`, `protein_source_std`, `protein_form_std`, `treatment_types`, `treatment_type`, `test_method_en` and `method_summary`. Several values in one cell are separated by " | ".
+- No sentences from the articles are included. Report the DOI (https://doi.org/<doi>) with every number, label model-derived values as estimates, and tell the user to check important numbers against the article.
+
+## Python example
+
+```python
+import io, zipfile, urllib.request
+import pandas as pd
+
+BASE = 'https://dzjxzyd.github.io/Protein-Database_Functionality/data/download/'
+raw = urllib.request.urlopen(BASE + 'flat_solubility.csv.zip').read()
+z = zipfile.ZipFile(io.BytesIO(raw))
+df = pd.read_csv(z.open('flat_solubility.csv'), encoding='utf-8-sig', low_memory=False)
+df['is_model'] = df['data_origin'].str.contains('model-derived')
+soy = df[df['protein_source_std'].str.contains('Soybean', na=False)]
+print(soy.groupby('unit_std')['value_std'].describe())
+```
+
+## Citation and licence
+
+Data: CC BY 4.0. Credit "PDF · Protein Database of Functionality" (URL and version from manifest.json) and cite the original articles the values come from. Code: MIT.

@@ -28,6 +28,21 @@
     for (let v = Math.ceil(lo / step - 1e-9) * step; v <= hi + step * 1e-9; v += step) ticks.push(+v.toPrecision(12));
     return ticks;
   }
+  function zeroTicks(max, n = 4) {
+    const t = niceTicks(0, max, n);
+    if (t.length > 1 && t[t.length - 1] < max) t.push(+(t[t.length - 1] + t[1] - t[0]).toPrecision(12));
+    return t;
+  }
+  // 线性坐标下少数极端值（单位写错、读错等）把范围拉到几十亿倍时，按 0.5%–99.5% 分位截取范围，范围外的不画、由调用方在图下说明
+  function robustRange(sorted) {
+    const n = sorted.length, lo = sorted[0], hi = sorted[n - 1];
+    if (n < 50) return { lo, hi, out: 0 };
+    const a = quantile(sorted, 0.005), b = quantile(sorted, 0.995);
+    if (!(b > a) || hi - lo <= 4 * (b - a)) return { lo, hi, out: 0 };
+    let out = 0;
+    for (const v of sorted) if (v < a || v > b) out++;
+    return { lo: a, hi: b, out, min: lo, max: hi };
+  }
   function logTicks(lo, hi) {
     const out = [];
     for (let e = Math.floor(Math.log10(lo)); e <= Math.ceil(Math.log10(hi)); e++) out.push(Math.pow(10, e));
@@ -85,7 +100,8 @@
   /** 横向条形：items [{key, label, value, note?}]，按给的顺序画；点一下调用 onClick(key) */
   function hbar(el, items, opt = {}) {
     const W = Math.max(300, el.clientWidth || 600);
-    const labelW = labelColumn(items.map((d) => d.label), W, 0.45), valW = 56, band = 26, bar = 16, top = 4;
+    const vf = (v) => (opt.valueFmt ? opt.valueFmt(v) : compact(v));
+    const labelW = labelColumn(items.map((d) => d.label), W, 0.45), valW = Math.max(40, ...items.map((d) => textWidth(vf(d.value)) + 10)), band = 26, bar = 16, top = 4;
     const H = top + items.length * band + 4;
     const max = Math.max(1, ...items.map((d) => d.value));
     const span = W - labelW - valW - 8;
@@ -97,7 +113,7 @@
         <rect class="hit" x="0" y="${y}" width="${W}" height="${band}"></rect>
         <text class="cat-text" x="${labelW - 8}" y="${y + band / 2 + 4}" text-anchor="end">${esc(label)}</text>
         <path class="mark-1" d="${barPath(labelW, y + (band - bar) / 2, w, bar, true)}"></path>
-        <text class="val-text" x="${labelW + w + 6}" y="${y + band / 2 + 4}">${esc(opt.valueFmt ? opt.valueFmt(d.value) : compact(d.value))}</text></g>`;
+        <text class="val-text" x="${labelW + w + 6}" y="${y + band / 2 + 4}">${esc(vf(d.value))}</text></g>`;
     });
     const { tip } = mount(el, W, H, body);
     el._csv = [[opt.csvLabel || 'label', opt.csvValue || 'value'], ...items.map((d) => [d.label, d.value])];
@@ -112,14 +128,16 @@
     if (!xs.length) { el.innerHTML = `<div class="chart-empty">${esc(opt.empty || '')}</div>`; return; }
     const tx = opt.log ? Math.log10 : (v) => v;
     xs = xs.map(tx).sort((a, b) => a - b);
-    let lo = xs[0], hi = xs[xs.length - 1];
+    const rr = opt.log ? { lo: xs[0], hi: xs[xs.length - 1], out: 0 } : robustRange(xs);
+    if (rr.out) xs = xs.filter((v) => v >= rr.lo && v <= rr.hi);
+    let lo = rr.lo, hi = rr.hi;
     if (hi === lo) { lo -= 0.5; hi += 0.5; }
     const iqr = quantile(xs, 0.75) - quantile(xs, 0.25);
     let nb = iqr > 0 ? Math.ceil((hi - lo) / (2 * iqr / Math.cbrt(xs.length))) : 20;
     nb = Math.max(8, Math.min(48, nb));
     const step = (hi - lo) / nb, bins = new Array(nb).fill(0);
     for (const v of xs) bins[Math.min(nb - 1, Math.floor((v - lo) / step))]++;
-    const ymax = Math.max(...bins), yt = niceTicks(0, ymax, 4), ytop = yt[yt.length - 1];
+    const ymax = Math.max(...bins), yt = zeroTicks(ymax, 4), ytop = yt[yt.length - 1];
     const pw = W - m.l - m.r, ph = H - m.t - m.b;
     const X = (v) => m.l + ((v - lo) / (hi - lo)) * pw, Y = (c) => m.t + ph - (c / ytop) * ph;
     let body = '<g class="grid">' + yt.map((c) => `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(c)}" y2="${Y(c)}"></line>`).join('') + '</g>';
@@ -138,6 +156,7 @@
     const back = (v) => (opt.log ? Math.pow(10, v) : v);
     el._csv = [['bin_from', 'bin_to', 'count'], ...bins.map((c, i) => [r6(back(lo + i * step)), r6(back(lo + (i + 1) * step)), c])];
     bindTips(el, tip, (i) => `<b>${fmt(back(lo + i * step))} – ${fmt(back(lo + (+i + 1) * step))}</b><br>${esc(opt.countFmt ? opt.countFmt(bins[i]) : bins[i])}`);
+    return rr;
   }
 
   /** 分组箱线图（横向）：groups [{key, label, values(已排序)}]，opt {log, xLabel, onClick, nFmt} */
@@ -182,8 +201,10 @@
   /** 散点：pts [{x, y, s(0 作者 / 1 模型), tip}]，opt {xLabel, yLabel, logY, series:[名, 名]} */
   function scatter(el, pts, opt = {}) {
     const W = Math.max(320, el.clientWidth || 700), H = 300, m = { l: 56, r: 16, t: 12, b: 42 };
-    const P = pts.filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y) && (!opt.logY || p.y > 0));
+    let P = pts.filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y) && (!opt.logY || p.y > 0));
     if (!P.length) { el.innerHTML = `<div class="chart-empty">${esc(opt.empty || '')}</div>`; return; }
+    const rr = opt.logY ? { out: 0 } : robustRange(P.map((p) => p.y).sort((a, b) => a - b));
+    if (rr.out) P = P.filter((p) => p.y >= rr.lo && p.y <= rr.hi);
     const ty = opt.logY ? Math.log10 : (v) => v;
     let xlo = Math.min(...P.map((p) => p.x)), xhi = Math.max(...P.map((p) => p.x));
     let ylo = Math.min(...P.map((p) => ty(p.y))), yhi = Math.max(...P.map((p) => ty(p.y)));
@@ -206,6 +227,7 @@
     const { tip } = mount(el, W, H, body);
     el._csv = [['x', 'y', 'series'], ...P.map((p) => [p.x, p.y, p.s ? 'model-derived' : 'author-reported'])];
     bindTips(el, tip, (i) => P[+i].tip);
+    return rr;
   }
 
   /** 按组分列的点图（每组一列，纵轴是数值）：groups [{key, label, sub, values:[{v, m(1 = 来源于模型), tip}]}]，
@@ -213,7 +235,12 @@
   function strip(el, groups, opt = {}) {
     const G = groups.filter((g) => g.values.some((x) => Number.isFinite(x.v) && (!opt.log || x.v > 0)));
     if (!G.length) { el.innerHTML = `<div class="chart-empty">${esc(opt.empty || '')}</div>`; el._csv = null; return; }
-    const W = Math.max(320, el.clientWidth || 700), H = 320, m = { l: 58, r: 14, t: 14, b: 58 };
+    const W = Math.max(320, el.clientWidth || 700), m = { l: 58, r: 14, t: 14, b: 58 };
+    // 组多、列窄时组名斜着写：底部留白按最长的组名算（最多 110px 长），每个组名再按到左边界的距离截断，不出图框
+    const gw0 = (W - m.l - m.r) / G.length, tilt = gw0 < 78, SIN = Math.sin(35 * Math.PI / 180), COS = Math.cos(35 * Math.PI / 180);
+    const labMax = tilt ? Math.min(110, Math.max(...G.map((g) => textWidth(g.label)))) : 0;
+    if (tilt) m.b = Math.max(58, Math.ceil(labMax * SIN + 24));
+    const H = 262 + m.b;
     const tv = opt.log ? Math.log10 : (v) => v;
     const all = G.flatMap((g) => g.values.map((x) => x.v)).filter((v) => Number.isFinite(v) && (!opt.log || v > 0)).map(tv);
     let lo = Math.min(...all), hi = Math.max(...all);
@@ -226,7 +253,7 @@
     let body = '<g class="grid">' + yt.map((v) => `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}"></line>`).join('') + '</g><g class="ax">';
     body += yt.map((v) => `<text x="${m.l - 8}" y="${Y(v) + 4}" text-anchor="end">${compact(v)}</text>`).join('');
     body += `<line x1="${m.l}" x2="${W - m.r}" y1="${m.t + ph}" y2="${m.t + ph}"></line></g>`;
-    const tilt = gw < 78, pts = [];
+    const pts = [];
     G.forEach((g, gi) => {
       const cx = m.l + gw * gi + gw / 2, span = Math.min(gw * 0.3, 26);
       const vals = g.values.filter((x) => Number.isFinite(x.v) && (!opt.log || x.v > 0));
@@ -239,7 +266,7 @@
         const s = vals.map((x) => tv(x.v)).sort((a, b) => a - b), med = quantile(s, 0.5), my = m.t + ph - ((med - lo) / (hi - lo)) * ph;
         body += `<line class="median" x1="${cx - Math.min(gw * 0.38, 34)}" x2="${cx + Math.min(gw * 0.38, 34)}" y1="${my}" y2="${my}" stroke-linecap="round"></line>`;
       }
-      const label = g.label.length > 16 ? g.label.slice(0, 15) + '…' : g.label;
+      const label = tilt ? fitLabel(g.label, Math.min(labMax, (cx - 8) / COS)) : fitLabel(g.label, gw - 6);
       body += tilt
         ? `<g class="bar-g grp-lbl" data-key="${esc(g.key)}"><text class="cat-text" transform="translate(${cx + 4} ${m.t + ph + 12}) rotate(-35)" text-anchor="end">${esc(label)}</text></g>`
         : `<g class="bar-g grp-lbl" data-key="${esc(g.key)}"><text class="cat-text" x="${cx}" y="${m.t + ph + 18}" text-anchor="middle">${esc(label)}</text><text class="lbl-text" x="${cx}" y="${m.t + ph + 33}" text-anchor="middle">${esc(g.sub || '')}</text></g>`;
