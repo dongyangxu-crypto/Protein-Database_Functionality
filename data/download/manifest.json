@@ -1,75 +1,75 @@
 {
  "release": {
-  "version": "1.1",
-  "date": "2026-11-11",
-  "zh": "加入 Elsevier、Springer Nature、MDPI、牛津大学出版社、Taylor & Francis、英国皇家化学会（RSC）六家出版商，与 ACS 合计 110 种期刊的 44,126 篇论文、344,515 个样品、1,714,457 个数值；下载改为每张表一个文件，平铺表按 17 项性质各一个文件。",
-  "en": "Added Elsevier, Springer Nature, MDPI, Oxford University Press, Taylor & Francis and the Royal Society of Chemistry: together with ACS, 44,126 papers from 110 journals, 344,515 samples and 1,714,457 values; downloads are now one file per table, with the flat table split into one file per property."
+  "version": "1.2",
+  "date": "2026-11-12",
+  "zh": "加入 Wiley：八家出版商 149 种期刊的 49,978 篇论文、390,530 个样品、1,929,357 个数值。读图结果有疑问的图（横轴、系列或样品对不上等）按现行规则重读，并重新提取数据点和测试方法。",
+  "en": "Added Wiley: 49,978 papers from 149 journals of eight publishers, 390,530 samples and 1,929,357 values. Figures whose readings were flagged (mismatched axes, series or samples) were re-read under the current rules, and data points and test methods re-extracted."
  },
- "built": "2026-11-11",
+ "built": "2026-11-12",
  "files": [
   {
    "table": "papers",
    "path": "data/download/papers.csv.zip",
    "cols": 11,
-   "rows": 44126,
-   "bytes": 2666223,
-   "sha256": "912efb302e7a7c41024597d2ef04f7a8b5ad1772f4ce61261a61c5c0ba5f5c60"
+   "rows": 49978,
+   "bytes": 3020484,
+   "sha256": "81a219bff1a5a1f0688b25b495ee5b8ef2eab4476d9429ea92c9df6ce5173f98"
   },
   {
    "table": "samples",
    "path": "data/download/samples.csv.zip",
    "cols": 20,
-   "rows": 344515,
-   "bytes": 21883088,
-   "sha256": "cdadff26388d838cfc1a85c06273b5408aff030a279c5c9af3aa9fd9b9c4d0a8"
+   "rows": 390530,
+   "bytes": 24750699,
+   "sha256": "1671695e5d08f65a7effad0b071b6354923c2c5e9b192c66691bce61e9740170"
   },
   {
    "table": "ingredients",
    "path": "data/download/ingredients.csv.zip",
    "cols": 6,
-   "rows": 493826,
-   "bytes": 3892618,
-   "sha256": "ae6481546361aeb070953261d270e292b3ed490000bced1bf4229a010402c62c"
+   "rows": 557313,
+   "bytes": 4378207,
+   "sha256": "df026161356d8f471e3078b7da109f2b3d73c4b211a48b658548e3e753f93293"
   },
   {
    "table": "treatments",
    "path": "data/download/treatments.csv.zip",
    "cols": 23,
-   "rows": 862740,
-   "bytes": 11797757,
-   "sha256": "f1d7d0f570eaa4d458fa808e6180a4631acaf79d20e4b43a6a6189261eaa9c79"
+   "rows": 980505,
+   "bytes": 13350971,
+   "sha256": "4d0e2769abb17de14b4559a7df7d9622863d753b204deee4c3e8ae2ef2b2c765"
   },
   {
    "table": "treatment_params",
    "path": "data/download/treatment_params.csv.zip",
    "cols": 7,
-   "rows": 1873083,
-   "bytes": 10382719,
-   "sha256": "77fbe734f6c225fa88bdc654426a3863c72deae3ad5583dbe6af1b114eceb8f0"
+   "rows": 2120831,
+   "bytes": 11724404,
+   "sha256": "17a60a0b3baa5492eca6e86e72c06372916a39bd28971d775640678349219c9f"
   },
   {
    "table": "measurements",
    "path": "data/download/measurements.csv.zip",
    "cols": 39,
-   "rows": 1714457,
-   "bytes": 61792359,
-   "sha256": "aefa02169b0b7495940ad2aa73ce5349ed616ad57dabc507c5a0b35767810672"
+   "rows": 1929357,
+   "bytes": 69381158,
+   "sha256": "c0d883eed67b6f80607173b62c05c9115679741d1e7ad26153673f1fe3fc11a0"
   },
   {
    "table": "measurement_conditions",
    "path": "data/download/measurement_conditions.csv.zip",
    "cols": 7,
-   "rows": 2336068,
-   "bytes": 13305640,
-   "sha256": "db9e5c1a34279d7f92f791b10a9c1ab0eb2da15363dd59a14b4009b94f99ab55"
+   "rows": 2603454,
+   "bytes": 14820237,
+   "sha256": "72d6ada87b0a4eb638a628a1f756e8eeb837a6f2d6aa4bed7a1f2524e0ea3ae5"
   },
   {
    "table": "methods",
    "path": "data/download/methods.csv.zip",
    "cols": 14,
-   "rows": 118671,
-   "bytes": 12583553,
-   "sha256": "7a9d452b061957932b6907a287fe96efe108ca482d925cbf31245f63d1ac5559"
+   "rows": 133542,
+   "bytes": 14141412,
+   "sha256": "2ae683529eb1113c33ac3310aead86f118ce05db794d40e10d332da52b014954"
   }
  ],
  "props": [
@@ -77,137 +77,137 @@
    "property": "solubility",
    "path": "data/download/flat_solubility.csv.zip",
    "cols": 61,
-   "rows": 189344,
-   "bytes": 12706996,
-   "sha256": "823165fdf2e65772201fb51da3938fcab6d36fe0472da536999f92256b5177a0"
+   "rows": 221509,
+   "bytes": 14775180,
+   "sha256": "a5d0aa4ddb672a46cddaff75585ae96ff5ad54978a1e4967e79ca03987ba5cbb"
   },
   {
    "property": "emulsifying",
    "path": "data/download/flat_emulsifying.csv.zip",
    "cols": 61,
-   "rows": 146048,
-   "bytes": 8974925,
-   "sha256": "e39e776628225491ae301f662fe17ca0e0742646c71b1ecee1fa9c1d06e7477d"
+   "rows": 167166,
+   "bytes": 10278716,
+   "sha256": "8b2a2630b759eac6ce8e53cb9b9e65506b6dccacb8392312b4290336e2b12053"
   },
   {
    "property": "foaming",
    "path": "data/download/flat_foaming.csv.zip",
    "cols": 61,
-   "rows": 96524,
-   "bytes": 5415924,
-   "sha256": "8bc3e19919c05b45f03c154445343c83bec084af0b03d2dfbc6d20d6a133905d"
+   "rows": 112626,
+   "bytes": 6303408,
+   "sha256": "b2b730f8eeaa4e5615f8963f871faa863987d10a65a281942b1cc2d6b711774a"
   },
   {
    "property": "gelling",
    "path": "data/download/flat_gelling.csv.zip",
    "cols": 61,
-   "rows": 52429,
-   "bytes": 4214215,
-   "sha256": "9a112c14340ea7e62c8930897aeba23f9b10d4b4c767ae783a314469586a89fd"
+   "rows": 59044,
+   "bytes": 4747679,
+   "sha256": "01c9872c3bb683d283217e110ecf42363f2bdad485d055be2fac6d5a2ec8ebb2"
   },
   {
    "property": "water_holding",
    "path": "data/download/flat_water_holding.csv.zip",
    "cols": 61,
-   "rows": 108913,
-   "bytes": 8336182,
-   "sha256": "479fee44faf61165b9ee7cdeca907ee4f4fdd5e2621b3e516a4bc0d21e0bbf64"
+   "rows": 130149,
+   "bytes": 9918809,
+   "sha256": "132bb047f7d5863a9baf451cd4ed6177a05d80f8752f5e04f8a80ca474eff737"
   },
   {
    "property": "oil_holding",
    "path": "data/download/flat_oil_holding.csv.zip",
    "cols": 61,
-   "rows": 19319,
-   "bytes": 1920888,
-   "sha256": "f8fec55e06d764862ae50bc6235e0a8f21ba6e4eebfbe5bb0a8defc6800fb67a"
+   "rows": 23154,
+   "bytes": 2299549,
+   "sha256": "f96de2bd43c64199df1cf22b705794e600429344d0150b4c48a1d988d955078d"
   },
   {
    "property": "particle_size",
    "path": "data/download/flat_particle_size.csv.zip",
    "cols": 61,
-   "rows": 287402,
-   "bytes": 18806469,
-   "sha256": "0c148fb9f07b5e07a86752dde70fb4f612258b1dfac086a890dcdad32c3fbe5b"
+   "rows": 310357,
+   "bytes": 20346656,
+   "sha256": "1c0ba3cbb1bfaa9a189bc16ab0c19fd53368305a49aec0f9c34dbe196b53c020"
   },
   {
    "property": "zeta_potential",
    "path": "data/download/flat_zeta_potential.csv.zip",
    "cols": 61,
-   "rows": 160428,
-   "bytes": 11363988,
-   "sha256": "a1f4458aa817bbe432b0c95a2a742993881a4393a7e030ec90612cf4f5906002"
+   "rows": 172907,
+   "bytes": 12223065,
+   "sha256": "69078e860f8ee638a9ec9d6bf27188981c4ef6e587cbe0e0b774e2a8a3562d47"
   },
   {
    "property": "pdi",
    "path": "data/download/flat_pdi.csv.zip",
    "cols": 61,
-   "rows": 45984,
-   "bytes": 3369068,
-   "sha256": "9d915bbba1a118ab85ee84ebff6d933edc78f3a568fe51e9f0209706e21859dc"
+   "rows": 48793,
+   "bytes": 3590527,
+   "sha256": "3c8724df42d611e4a7d064d5e78b6cc7391e53110574e82e3af62efeb6d622c9"
   },
   {
    "property": "sulfhydryl",
    "path": "data/download/flat_sulfhydryl.csv.zip",
    "cols": 61,
-   "rows": 71613,
-   "bytes": 5527145,
-   "sha256": "1de68f971de9e31d56df8795dfc61426a5936832dceec7406c7c21e242cb2aef"
+   "rows": 80143,
+   "bytes": 6149466,
+   "sha256": "7355fbf18fcd98b1684e1a9ec1e772462b9bca840adbbfeea54f297d651db588"
   },
   {
    "property": "disulfide",
    "path": "data/download/flat_disulfide.csv.zip",
    "cols": 61,
-   "rows": 13470,
-   "bytes": 1155395,
-   "sha256": "bc2108bbbf6855861005a8d32d9dd4b43e7449428d3ee8c8726bd7fc5c246ad5"
+   "rows": 15016,
+   "bytes": 1278974,
+   "sha256": "c77bc166358775e4d1689d17aadb76225cc2b538ddee338be6ad1e8e23e757fb"
   },
   {
    "property": "surface_hydrophobicity",
    "path": "data/download/flat_surface_hydrophobicity.csv.zip",
    "cols": 61,
-   "rows": 62419,
-   "bytes": 5519118,
-   "sha256": "55c27202e66247e222ddbbc166f70479d721591ff52d1592222181a33c121e3b"
+   "rows": 68516,
+   "bytes": 6036494,
+   "sha256": "d2be85b38bc2a7d2dc24a92b28006662fccb5dd850d301cb7b3ef7f6ddbfb786"
   },
   {
    "property": "turbidity",
    "path": "data/download/flat_turbidity.csv.zip",
    "cols": 61,
-   "rows": 66865,
-   "bytes": 3514917,
-   "sha256": "2934e0b840859d1b310c2496d185e5d569d45c36d5220a9d162a1518a7d2214c"
+   "rows": 72955,
+   "bytes": 3842085,
+   "sha256": "7b4cd123a6c584cef29016f04af9b0572c01a618af94974ff0914525582c5892"
   },
   {
    "property": "degree_of_hydrolysis",
    "path": "data/download/flat_degree_of_hydrolysis.csv.zip",
    "cols": 61,
-   "rows": 55273,
-   "bytes": 3561154,
-   "sha256": "c3b191055f2046985617cab561ffbbf719be822d996a599384cca36351acbedc"
+   "rows": 64355,
+   "bytes": 4126227,
+   "sha256": "a090702d17f2b87dc2ec071a351ebe7c75157643f587d1e83750dea63caeeaa4"
   },
   {
    "property": "free_amino",
    "path": "data/download/flat_free_amino.csv.zip",
    "cols": 61,
-   "rows": 40381,
-   "bytes": 3144624,
-   "sha256": "d3350356dbe88c81f65487d4da2fd196536018ee96236c580dd0e5f91aadedc8"
+   "rows": 45392,
+   "bytes": 3527339,
+   "sha256": "d53cdf9bac5ee9fa985574ffcd2edaf879dea3c943ee0922856fff795271c000"
   },
   {
    "property": "encapsulation",
    "path": "data/download/flat_encapsulation.csv.zip",
    "cols": 61,
-   "rows": 54671,
-   "bytes": 4452096,
-   "sha256": "fd877d2f26a35ec95a6854ad2f88e79f3e912b7aac760fa4cdd50cf09c33286e"
+   "rows": 58929,
+   "bytes": 4820626,
+   "sha256": "9d4353e666cfe6b6fab2e08ddeb054ee8b9e3f392459cd3ac79e153239b599ca"
   },
   {
    "property": "antioxidant",
    "path": "data/download/flat_antioxidant.csv.zip",
    "cols": 61,
-   "rows": 243374,
-   "bytes": 14893233,
-   "sha256": "74974dce1ca26288c78f3b6f3cf73afb3b2e3ec65b55dc530b7dd63d43378c41"
+   "rows": 278346,
+   "bytes": 17026389,
+   "sha256": "6b9cd6078f6a3c3dd2fcbb088797c9711ccd4c52fa799ac953e9042d956720e4"
   }
  ]
 }

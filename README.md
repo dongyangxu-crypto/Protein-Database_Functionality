@@ -8,27 +8,28 @@ A searchable database of food protein functional properties. Every value is link
 
 ## 内容 / Contents
 
-| | 数量 Count（版本 1.1，数据 2026-11-11） |
+| | 数量 Count（版本 1.2，数据 2026-11-12） |
 |---|---|
-| 论文 Papers | 44,126 |
-| 期刊 Journals | 110 |
-| 样品 Samples | 344,515 |
-| 数值 Values | 1,714,457 |
-| 测试方法 Test methods | 118,671 |
+| 论文 Papers | 49,978 |
+| 期刊 Journals | 149 |
+| 样品 Samples | 390,530 |
+| 数值 Values | 1,929,357 |
+| 测试方法 Test methods | 133,542 |
 
 17 项功能特性 / 17 properties：溶解度 solubility、乳化性 emulsifying、起泡性 foaming、凝胶性 gelling、持水性 water-holding、持油性 oil-holding、粒径 particle size、ζ-电位 ζ-potential、PDI、巯基含量 sulfhydryl、二硫键含量 disulfide bonds、表面疏水性 surface hydrophobicity、浊度 turbidity、水解度 degree of hydrolysis、游离氨基含量 free amino groups、包埋率/负载率 encapsulation/loading efficiency、抗氧化活性 antioxidant activity。
 
-目前收录七家出版商的论文，其他出版商的数据会陆续加入。/ Currently covers seven publishers; more will be added.
+收录八家出版商的论文。/ Covers eight publishers.
 
 | 出版商 Publisher | 期刊 Journals | 论文 Papers | 样品 Samples | 数值 Values |
 |---|---:|---:|---:|---:|
-| Elsevier | 54 | 32,120 | 250,602 | 1,266,152 |
-| Springer Nature | 26 | 3,782 | 29,888 | 138,103 |
-| MDPI | 5 | 2,968 | 23,467 | 114,047 |
-| ACS | 5 | 2,338 | 18,936 | 96,952 |
-| Oxford University Press | 5 | 1,444 | 10,925 | 51,293 |
-| Taylor & Francis | 12 | 1,208 | 9,082 | 40,114 |
-| Royal Society of Chemistry | 3 | 266 | 1,615 | 7,796 |
+| Elsevier | 54 | 32,135 | 250,753 | 1,268,981 |
+| Wiley | 39 | 5,788 | 45,474 | 210,368 |
+| Springer Nature | 26 | 3,782 | 29,972 | 138,602 |
+| MDPI | 5 | 2,970 | 23,492 | 114,063 |
+| ACS | 6 | 2,382 | 19,199 | 98,050 |
+| Oxford University Press | 5 | 1,444 | 10,948 | 51,323 |
+| Taylor & Francis | 12 | 1,210 | 9,070 | 40,123 |
+| Royal Society of Chemistry | 3 | 267 | 1,622 | 7,847 |
 
 ## 网站功能 / Features
 
@@ -40,8 +41,8 @@ A searchable database of food protein functional properties. Every value is link
 
 ## 数据来源和注意事项 / Data origin and caveats
 
-- **来源于模型 / Model-derived：** 约 65% 的数值是由模型从论文图中读取的估计值（`data_origin = 来源于模型 (model-derived)`，网站上标「模型 / Model」）。其余是作者在表格或正文中给出的原值（`作者原值 (author-reported)`）。
-  About 65% of the values were read from figures by a model and are estimates (`data_origin = 来源于模型 (model-derived)`, marked "Model" on the website). The rest are author-reported values from tables or the main text.
+- **来源于模型 / Model-derived：** 约 64% 的数值是由模型从论文图中读取的估计值（`data_origin = 来源于模型 (model-derived)`，网站上标「模型 / Model」）。其余是作者在表格或正文中给出的原值（`作者原值 (author-reported)`）。
+  About 64% of the values were read from figures by a model and are estimates (`data_origin = 来源于模型 (model-derived)`, marked "Model" on the website). The rest are author-reported values from tables or the main text.
 - **样品处理和测试方法是两回事 / Sample treatment ≠ test method：** 样品处理是样品在测定前经过的制备和改性（超声、加热、酶解…），见 `treatments`；测试方法是这项性质怎么测的，见 `methods` 和数值的 `test_method`。约 98% 的数值对应到了具体测试方法，其余标「原文未写明」或「不确定」（一项性质用了几种方法、分不清某个数用的哪种）。
   Sample treatment (sonication, heating, hydrolysis …, in `treatments`) is the processing a sample received before measurement; the test method (`methods`, `test_method`) is how the property was measured. About 98% of values are linked to a specific test method; the rest are marked "not stated" or "uncertain".
 - 样品组成、处理条件、测试方法和数值的对应关系由自动流程完成（大模型解读 + 程序核对）。使用前请通过 DOI 对照原文核对。

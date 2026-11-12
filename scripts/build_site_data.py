@@ -69,6 +69,12 @@ RELEASES = [                                   # 用户 2026-11-02 定：这一�
      'en': 'Added Elsevier, Springer Nature, MDPI, Oxford University Press, Taylor & Francis and the Royal Society of Chemistry: '
            'together with ACS, 44,126 papers from 110 journals, 344,515 samples and 1,714,457 values; downloads are now one file '
            'per table, with the flat table split into one file per property.'},
+    {'version': '1.2', 'date': '2026-11-12',
+     'zh': '加入 Wiley：八家出版商 149 种期刊的 49,978 篇论文、390,530 个样品、1,929,357 个数值。读图结果有疑问的图'
+           '（横轴、系列或样品对不上等）按现行规则重读，并重新提取数据点和测试方法。',
+     'en': 'Added Wiley: 49,978 papers from 149 journals of eight publishers, 390,530 samples and 1,929,357 values. Figures '
+           'whose readings were flagged (mismatched axes, series or samples) were re-read under the current rules, and data '
+           'points and test methods re-extracted.'},
 ]
 
 
