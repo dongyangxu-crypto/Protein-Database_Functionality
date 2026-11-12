@@ -4,8 +4,8 @@
 
 This file is for AI agents and scripts. The website (index.html) needs JavaScript and shows nothing to a plain HTTP fetch; all data are static files listed below. No sign-up, no API key.
 
-Site root: https://dzjxzyd.github.io/Protein-Database_Functionality/ (all paths below are relative to it)
-Source repository: https://github.com/dzjxzyd/Protein-Database_Functionality
+Site root: https://dongyangxu-crypto.github.io/Protein-Database_Functionality/ (all paths below are relative to it)
+Source repository: https://github.com/dongyangxu-crypto/Protein-Database_Functionality
 
 ## Entry point
 
@@ -34,7 +34,7 @@ Source repository: https://github.com/dzjxzyd/Protein-Database_Functionality
 import io, zipfile, urllib.request
 import pandas as pd
 
-BASE = 'https://dzjxzyd.github.io/Protein-Database_Functionality/data/download/'
+BASE = 'https://dongyangxu-crypto.github.io/Protein-Database_Functionality/data/download/'
 raw = urllib.request.urlopen(BASE + 'flat_solubility.csv.zip').read()
 z = zipfile.ZipFile(io.BytesIO(raw))
 df = pd.read_csv(z.open('flat_solubility.csv'), encoding='utf-8-sig', low_memory=False)

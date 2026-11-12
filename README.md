@@ -2,7 +2,7 @@
 
 A searchable database of food protein functional properties. Values for 17 functional properties were extracted from published journal articles, and every value is linked to a specific sample (protein source, composition, added ingredients), its sample treatment (method, temperature, time, pH …) and the test method used to measure it (e.g. Bradford assay for solubility, dynamic light scattering for particle size).
 
-**Website:** https://dzjxzyd.github.io/Protein-Database_Functionality/
+**Website:** https://dongyangxu-crypto.github.io/Protein-Database_Functionality/
 
 Chinese version: [see below](#中文说明).
 
@@ -79,7 +79,7 @@ Conventions:
 The website needs JavaScript, so an AI agent fetching it sees no content. Agents should start from [`llms.txt`](llms.txt) (plain-text instructions: which file to use, how to read the columns, a Python example) and [`data/download/manifest.json`](data/download/manifest.json) (every download file with its URL, row count, size and SHA-256). No sign-up or API key is needed. To hand the database to your AI, send it:
 
 ```
-Use the PDF protein functionality database at https://dzjxzyd.github.io/Protein-Database_Functionality/ . Read https://dzjxzyd.github.io/Protein-Database_Functionality/llms.txt first, then download the files listed in https://dzjxzyd.github.io/Protein-Database_Functionality/data/download/manifest.json . Values whose data_origin contains "model-derived" are estimates read from figures. Give the DOI for every number you report.
+Use the PDF protein functionality database at https://dongyangxu-crypto.github.io/Protein-Database_Functionality/ . Read https://dongyangxu-crypto.github.io/Protein-Database_Functionality/llms.txt first, then download the files listed in https://dongyangxu-crypto.github.io/Protein-Database_Functionality/data/download/manifest.json . Values whose data_origin contains "model-derived" are estimates read from figures. Give the DOI for every number you report.
 ```
 
 ## Updating
@@ -106,7 +106,7 @@ Developed by the [AI4FH Lab](https://dzjxzyd.github.io/ai4fh-lab/) (Artificial I
 
 **PDF · Protein Database of Functionality（蛋白质功能特性数据库）**：可搜索的食品蛋白质功能特性数据库。从已发表论文中提取 17 项功能特性的数值，每个数值都对应到具体样品（蛋白来源、组成、复配物）、样品处理（方法、温度、时间、pH…）和测试方法（例如溶解度用 Bradford 法、粒径用动态光散射）。
 
-**网站：** https://dzjxzyd.github.io/Protein-Database_Functionality/
+**网站：** https://dongyangxu-crypto.github.io/Protein-Database_Functionality/
 
 ### 内容
 
