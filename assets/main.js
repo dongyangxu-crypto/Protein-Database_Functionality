@@ -3,7 +3,7 @@
 (() => {
   const A = window.PDF;
   const { $, esc, t, ic, D } = A;
-  const ROUTES = { '/': 'home', '/search': 'search', '/browse': 'browse', '/stats': 'stats', '/download': 'download', '/help': 'help',
+  const ROUTES = { '/': 'home', '/search': 'search', '/browse': 'browse', '/properties': 'props', '/stats': 'stats', '/download': 'download', '/help': 'help',
     '/changelog': 'changelog', '/basket': 'basket', '/compare': 'compare', '/paper': 'paper', '/sample': 'sample', '/property': 'property' };
   let VIEW = '';
   A.currentView = () => VIEW;
@@ -27,6 +27,7 @@
       if (view === 'search') await A.searchView.show(params);
       else if (view === 'home') P.renderHome();
       else if (view === 'browse') P.renderBrowse(params);
+      else if (view === 'props') P.renderProps(params);
       else if (view === 'stats') P.renderStats();
       else if (view === 'property') await P.renderProperty(params);
       else if (view === 'download') await P.renderDownload();

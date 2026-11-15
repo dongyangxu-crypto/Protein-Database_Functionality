@@ -11,6 +11,41 @@ window.PDF_TEXT = (() => {
     degree_of_hydrolysis: ['水解度', 'Degree of hydrolysis'], free_amino: ['游离氨基含量', 'Free amino group content'],
     encapsulation: ['包埋率/负载率', 'Encapsulation / loading efficiency'], antioxidant: ['抗氧化活性', 'Antioxidant activity'],
   };
+  // 11-15 性质分四类（首页色环、性质说明页用；只用于浏览）：[键, 中文, 英文, 英文短名(色环内圈), 内圈色, 外圈色, 性质]
+  const PROP_GROUPS = [
+    ['func', '功能特性', 'Techno-functional', 'Functional', '#F2B84B', '#F7D58F', ['solubility', 'emulsifying', 'foaming', 'gelling', 'water_holding', 'oil_holding']],
+    ['coll', '胶体与颗粒', 'Colloidal', 'Colloidal', '#6CC0EE', '#A9DBF5', ['particle_size', 'zeta_potential', 'pdi', 'turbidity']],
+    ['chem', '结构与化学', 'Structure & chemistry', 'Structure', '#EC8A6A', '#F4B39C', ['sulfhydryl', 'disulfide', 'surface_hydrophobicity', 'degree_of_hydrolysis', 'free_amino']],
+    ['deliv', '递送与活性', 'Delivery & bioactivity', 'Delivery', '#5FCDA6', '#9EE0C6', ['encapsulation', 'antioxidant']],
+  ];
+  // 色环外圈的短名 [中, 英]
+  const PROP_SHORT = {
+    solubility: ['溶解度', 'Solubility'], emulsifying: ['乳化性', 'Emulsifying'], foaming: ['起泡性', 'Foaming'], gelling: ['凝胶性', 'Gelling'],
+    water_holding: ['持水性', 'WHC'], oil_holding: ['持油性', 'OHC'], particle_size: ['粒径', 'Size'], zeta_potential: ['ζ-电位', 'ζ-Pot.'],
+    pdi: ['PDI', 'PDI'], turbidity: ['浊度', 'Turbidity'], sulfhydryl: ['巯基', 'SH'], disulfide: ['二硫键', 'S–S'],
+    surface_hydrophobicity: ['表面疏水性', 'Hydrophob.'], degree_of_hydrolysis: ['水解度', 'DH'], free_amino: ['游离氨基', 'Free NH₂'],
+    encapsulation: ['包埋率', 'Encaps.'], antioxidant: ['抗氧化', 'Antiox.'],
+  };
+  // 性质说明页「测什么」[中, 英]
+  const PROP_DEF = {
+    solubility: ['蛋白在给定 pH、离子强度下溶入水相的比例或浓度', 'Fraction or concentration of protein that dissolves in water at a given pH and ionic strength'],
+    emulsifying: ['形成并稳定油水乳液的能力（乳化活性 EAI、乳化稳定性 ESI 等）', 'Ability to form and stabilise oil-in-water emulsions (EAI, ESI …)'],
+    foaming: ['形成泡沫的能力和泡沫的稳定性', 'Ability to form foam and keep it stable'],
+    gelling: ['形成凝胶的能力和凝胶强度', 'Ability to form a gel, and gel strength'],
+    water_holding: ['单位蛋白能保住的水', 'Water held per unit of protein'],
+    oil_holding: ['单位蛋白能吸住的油', 'Oil held per unit of protein'],
+    particle_size: ['颗粒或液滴的平均大小', 'Mean size of particles or droplets'],
+    zeta_potential: ['颗粒表面电荷，反映静电稳定性', 'Surface charge of particles, an indicator of electrostatic stability'],
+    pdi: ['粒径分布的宽窄（多分散指数）', 'Width of the size distribution (polydispersity index)'],
+    turbidity: ['体系散射或吸收光的程度，常用来看聚集', 'How much light the system scatters or absorbs, often used to follow aggregation'],
+    sulfhydryl: ['游离或总巯基（–SH）的量', 'Amount of free or total sulfhydryl (–SH) groups'],
+    disulfide: ['二硫键（S–S）的量', 'Amount of disulfide (S–S) bonds'],
+    surface_hydrophobicity: ['蛋白表面暴露的疏水基团多少', 'Amount of hydrophobic groups exposed on the protein surface'],
+    degree_of_hydrolysis: ['被水解的肽键所占比例', 'Fraction of peptide bonds that have been hydrolysed'],
+    free_amino: ['游离氨基（–NH₂）的量', 'Amount of free amino (–NH₂) groups'],
+    encapsulation: ['活性物被包埋或负载的比例', 'Share of an active compound that is encapsulated or loaded'],
+    antioxidant: ['清除自由基或还原的能力', 'Radical-scavenging or reducing capacity'],
+  };
   // 库里固定的几种中文类别 → 英文界面
   const EN = {
     '植物蛋白': 'Plant protein', '乳蛋白': 'Dairy protein', '蛋类蛋白': 'Egg protein', '肉类或水产蛋白': 'Meat / aquatic protein',
@@ -74,7 +109,7 @@ window.PDF_TEXT = (() => {
 
   const zh = {
     skip: '跳到正文', fullname: '蛋白质功能特性数据库', title: 'PDF · 蛋白质功能特性数据库', menu: '菜单',
-    nav_home: '首页', nav_search: '检索', nav_browse: '浏览', nav_stats: '统计', nav_download: '下载', nav_help: '帮助',
+    nav_home: '首页', nav_search: '检索', nav_browse: '浏览', nav_props: '性质说明', nav_stats: '统计', nav_download: '下载', nav_help: '帮助',
     nav_basket: '数据篮', nav_changelog: '更新日志',
     loading: '正在加载数据…', load_fail: '数据加载失败：{e}', loading_search: '正在加载关键词索引…',
     no_stream: '这个浏览器太旧，不能解压数据。请换用新版 Chrome、Edge、Firefox 或 Safari。',
@@ -99,10 +134,15 @@ window.PDF_TEXT = (() => {
     h_props: '各项性质的数值数', h_props_sub: '前 10 项 · 点条形进入检索', h_props_more: '全部 17 项的统计 →',
     h_src: '常见蛋白来源', h_src_sub: '按样品数，前 10', h_src_more: '浏览全部 {n} 种来源 →',
     h_tt: '常见样品处理', h_tt_sub: '按样品数，不含溶解、离心、干燥等常规步骤', h_tt_more: '浏览全部 {n} 类处理 →',
-    h_origin: '数据来源', h_origin_note: '「模型」是从论文图中读出的估计值，其余是作者在表格或正文里给出的原值。{p}% 的数值附有 SD。',
-    h_cite: '如何引用', h_cite_text: 'PDF 的论文正在准备中。在那之前，请引用本网站网址和数据所在的原始论文（每条数据都附 DOI）。',
-    h_cite_copy: '复制引用', h_versions: '版本历史', h_versions_all: '全部更新记录 →',
-    h_contrib: '想补充数据或报告错误？请看', h_contrib_link: '帮助 · 反馈',
+    h_hub: '{n} 项性质', h_wheel: '17 项性质一览', h_wheel_sub: '分成四类。点色环里的一项，或下面的名字，直接看它的数值分布、常用测试方法和原始数值。', h_nvals: '{n} 个数值',
+    e_search: '检索数值', e_search_d: '按性质、蛋白、处理、方法筛选，画图、对比、导出',
+    e_props: '性质说明', e_props_d: '每项性质测什么、标准单位、常用测试方法',
+    e_dl: '下载数据', e_dl_d: '按性质的平铺表或完整关系表，CC BY 4.0',
+    e_ai: '给 AI 用', e_ai_d: '复制一段话给你的 AI，它自己下载、分析',
+    h_line_model: '标记的数值是从图中读出的估计值', h_line_cite: '如何引用',
+    pr_sub: '17 项性质各测什么、常用什么单位、库里最常用的测试方法和数值多少。测试方法后面的数字是库里用这种方法测出的数值个数。',
+    pr_th_prop: '性质', pr_th_def: '测什么', pr_th_unit: '常见单位', pr_th_methods: '最常用的测试方法', pr_th_n: '数值', pr_dist: '分布 →',
+    pr_note: '四类分法只用于浏览。单位按库里数值的多少排；换算不了的（写法认不出、基准不同）保留原单位，见下载文件的 value_std / unit_std 两列。',
     // 检索页
     s_title: '检索', s_sub: '按性质与数值、蛋白、样品处理、测试方法或文献筛选；也可以粘贴一列 DOI 批量检索，或用高级查询组合条件。筛选条件写进网址，可以收藏和分享。',
     kw_ph: '关键词；输入蛋白、处理、性质、方法或 DOI 时会出现提示', kw_go: '检索',
@@ -207,7 +247,7 @@ window.PDF_TEXT = (() => {
 
   const en = {
     skip: 'Skip to content', fullname: 'Protein Database of Functionality', title: 'PDF · Protein Database of Functionality', menu: 'Menu',
-    nav_home: 'Home', nav_search: 'Search', nav_browse: 'Browse', nav_stats: 'Statistics', nav_download: 'Download', nav_help: 'Help',
+    nav_home: 'Home', nav_search: 'Search', nav_browse: 'Browse', nav_props: 'Properties', nav_stats: 'Statistics', nav_download: 'Download', nav_help: 'Help',
     nav_basket: 'Basket', nav_changelog: 'Changelog',
     loading: 'Loading data…', load_fail: 'Failed to load data: {e}', loading_search: 'Loading keyword index…',
     no_stream: 'This browser is too old to decompress the data. Please use a recent Chrome, Edge, Firefox or Safari.',
@@ -229,10 +269,15 @@ window.PDF_TEXT = (() => {
     h_props: 'Values per property', h_props_sub: 'Top 10 · click a bar to search', h_props_more: 'All 17 properties →',
     h_src: 'Common protein sources', h_src_sub: 'By samples, top 10', h_src_more: 'Browse all {n} sources →',
     h_tt: 'Common sample treatments', h_tt_sub: 'By samples, excluding routine steps (dissolving, centrifugation, drying…)', h_tt_more: 'Browse all {n} treatment types →',
-    h_origin: 'Data origin', h_origin_note: '“Model” values were read from figures and are estimates; the rest are author-reported values from tables or text. {p}% of values come with an SD.',
-    h_cite: 'How to cite', h_cite_text: 'A paper describing PDF is in preparation. Until then, please cite this website and the original articles (every record has a DOI).',
-    h_cite_copy: 'Copy citation', h_versions: 'Version history', h_versions_all: 'Full changelog →',
-    h_contrib: 'Want to contribute data or report an error? See', h_contrib_link: 'Help · Feedback',
+    h_hub: '{n} properties', h_wheel: 'The 17 properties', h_wheel_sub: 'In four groups. Click a property in the ring, or a name below, to see its value distribution, common test methods and raw values.', h_nvals: '{n} values',
+    e_search: 'Search values', e_search_d: 'Filter by property, protein, treatment and method; plot, compare, export',
+    e_props: 'Property guide', e_props_d: 'What each property measures, its units and common test methods',
+    e_dl: 'Download', e_dl_d: 'Flat tables per property or the full relational tables, CC BY 4.0',
+    e_ai: 'For AI agents', e_ai_d: 'Copy one paragraph to your AI; it downloads and analyses the data itself',
+    h_line_model: 'values were read from figures and are estimates', h_line_cite: 'How to cite',
+    pr_sub: 'What each of the 17 properties measures, the units it is reported in, the test methods used most in the database, and how many values there are. The number after a method is how many values in the database were measured with it.',
+    pr_th_prop: 'Property', pr_th_def: 'What it measures', pr_th_unit: 'Common units', pr_th_methods: 'Most used test methods', pr_th_n: 'Values', pr_dist: 'Distribution →',
+    pr_note: 'The four groups are for browsing only. Units are ranked by number of values; values that could not be converted (unrecognised unit or a different basis) keep their original unit — see value_std / unit_std in the download files.',
     s_title: 'Search', s_sub: 'Filter by property and value, protein, sample treatment, test method or literature; paste a list of DOIs for a batch search, or combine conditions in the query builder. Filters are kept in the URL, so you can bookmark and share them.',
     kw_ph: 'Keyword — or start typing a protein, treatment, property, method or DOI', kw_go: 'Search',
     kw_hint: 'Searches title, DOI, journal, sample, protein, ingredients, sample treatment, measure name and test method; all space-separated words must match',
@@ -483,5 +528,5 @@ print(soy.groupby('unit_std')['value_std'].describe())</pre>
       ['cite', 'How to cite', `<p>A paper describing PDF is in preparation. Until then, please cite this website (with access date and version) and the original articles (every record has a DOI). Data are licensed CC BY 4.0.</p>`],
     ],
   };
-  return { PROP_NAMES, EN, ZH, ROUTINE_TT, TCAT_NAMES, I18N: { zh, en }, HELP };
+  return { PROP_NAMES, PROP_GROUPS, PROP_SHORT, PROP_DEF, EN, ZH, ROUTINE_TT, TCAT_NAMES, I18N: { zh, en }, HELP };
 })();

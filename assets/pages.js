@@ -24,16 +24,6 @@
       coil += `${(300 + x * Math.cos(a) - y * Math.sin(a)).toFixed(1)} ${(470 + x * Math.sin(a) + y * Math.cos(a)).toFixed(1)}${i < 260 ? 'L' : ''}`; }
     return `<svg class="hero-art" viewBox="0 0 560 520" aria-hidden="true"><g fill="none" stroke="#ffffff" stroke-width="1.6">${lines}</g><g fill="#ffffff">${nodes}</g><path d="${coil}" fill="none" stroke="#7cc8f2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   }
-  // 数据来源：一根两段的条（作者原值 / 来源于模型）+ 图例
-  function originBar(el) {
-    const st = D.stats, W = Math.max(260, el.clientWidth || 320), a = D.nV - st.model, m = st.model;
-    const wa = Math.round((W - 2) * a / D.nV), wb = W - 2 - wa, r = Math.min(4, wb);
-    el.innerHTML = `<svg viewBox="0 0 ${W} 58" width="${W}" height="58" role="img"><rect class="mark-1" x="0" y="4" width="${wa}" height="18"></rect>
-      <path class="mark-2" d="M${wa + 2},4H${W - r}Q${W},4 ${W},${4 + r}V${22 - r}Q${W},22 ${W - r},22H${wa + 2}Z"></path>
-      <rect class="mark-1" x="0" y="36" width="10" height="10" rx="2"></rect><text class="cat-text" x="15" y="45">${esc(t('o_author'))} ${fmt(a)}（${pct(a, D.nV)}%）</text>
-      <rect class="mark-2" x="${W / 2 + 6}" y="36" width="10" height="10" rx="2"></rect><text class="cat-text" x="${W / 2 + 21}" y="45">${esc(t('badge_model'))} ${fmt(m)}（${pct(m, D.nV)}%）</text></svg>`;
-    el._csv = [['data_origin', 'values'], ['author-reported', a], ['model-derived', m]];
-  }
   const top = (arr, n, keep = () => true) => [...arr.keys()].filter((c) => arr[c] && keep(c)).sort((a, b) => arr[b] - arr[a]).slice(0, n);
   const EXAMPLES = [
     { zh: '大豆 · 超声 · 溶解度', en: 'Soybean · Ultrasound · Solubility', p: { prop: 'solubility', src: 'Soybean', tt: 'Ultrasound' } },
@@ -44,6 +34,38 @@
   // 卡片标题；图表的下载按钮（PNG / SVG / 数据 CSV）放在卡片底部右侧
   const cardHead = (title, sub) => `<div class="card-head"><h3>${esc(title)}${sub ? ` <span class="sub">${esc(sub)}</span>` : ''}</h3></div>`;
   const cardFoot = (link, dl) => `<div class="card-foot">${link || ''}${dl ? A.chartDl(dl) : ''}</div>`;
+
+  // 首页性质色环（11-15，借 ADMETlab 3.0 首页环形图的形式）：内圈 4 类、外圈 17 项等分，点一项进它的性质页
+  function propWheel() {
+    const X = A.X, L = A.lang() === 'zh' ? 0 : 1, C = 260, step = 360 / 17, gap = 1;
+    const pt = (r, a) => { const q = (a - 90) * Math.PI / 180; return [C + r * Math.cos(q), C + r * Math.sin(q)]; };
+    const f1 = (v) => v.toFixed(1);
+    const arc = (r0, r1, a0, a1) => { const [x0, y0] = pt(r1, a0), [x1, y1] = pt(r1, a1), [x2, y2] = pt(r0, a1), [x3, y3] = pt(r0, a0);
+      return `M${f1(x0)},${f1(y0)}A${r1},${r1} 0 0 1 ${f1(x1)},${f1(y1)}L${f1(x2)},${f1(y2)}A${r0},${r0} 0 0 0 ${f1(x3)},${f1(y3)}Z`; };
+    let outer = '', inner = '', k = 0;
+    for (const [gk, gzh, gen, gshort, c1, c2, props] of X.PROP_GROUPS) {
+      const g0 = k;
+      for (const p of props) {
+        const c = D.meta.props.indexOf(p), a0 = k * step + gap / 2, a1 = (k + 1) * step - gap / 2, [x, y] = pt(196, (a0 + a1) / 2), lbl = X.PROP_SHORT[p][L];
+        const name = c >= 0 ? A.propName(c) : p, n = c >= 0 ? D.stats.propV[c] : 0;
+        outer += `<a href="${A.propHref(p)}" aria-label="${esc(name)}"><title>${esc(name)} · ${esc(t('h_nvals', { n: fmt(n) }))}</title><path d="${arc(138, 252, a0, a1)}" fill="${c2}"/><text x="${f1(x)}" y="${f1(y + 4.5)}" font-size="${lbl.length >= (L ? 9 : 4) ? 12 : 13}">${esc(lbl)}</text></a>`;
+        k++;
+      }
+      const a0 = g0 * step + gap / 2, a1 = k * step - gap / 2, [x, y] = pt(103, (a0 + a1) / 2);
+      inner += `<a href="#/properties?g=${gk}" aria-label="${esc(L ? gen : gzh)}"><path d="${arc(72, 132, a0, a1)}" fill="${c1}"/><text class="cat" x="${f1(x)}" y="${f1(y + 4)}">${esc(L ? gshort : gzh)}</text></a>`;
+    }
+    const mark = $('logo-mark') ? `<g transform="translate(232 204) scale(.875)">${$('logo-mark').innerHTML}</g>` : '';
+    return `<svg class="wheel" viewBox="0 0 520 520" aria-label="${esc(t('h_wheel'))}">${outer}${inner}<circle class="hub" cx="260" cy="260" r="64"/>${mark}<text class="hub-t" x="260" y="290">${esc(t('h_hub', { n: D.meta.props.length }))}</text></svg>`;
+  }
+  function wheelLegend() {
+    const X = A.X, L = A.lang() === 'zh' ? 0 : 1;
+    return X.PROP_GROUPS.map(([gk, gzh, gen, , c1, , props]) => {
+      const codes = props.map((p) => D.meta.props.indexOf(p)).filter((c) => c >= 0), n = codes.reduce((a, c) => a + D.stats.propV[c], 0);
+      return `<div class="wl-row"><i style="background:${c1}"></i><div><a class="wl-name" href="#/properties?g=${gk}">${esc(L ? gen : gzh)}</a> <span class="dim">${esc(t('h_nvals', { n: fmt(n) }))}</span>
+        <div class="wl-chips">${codes.map((c) => `<a class="chip" href="${A.propHref(D.meta.props[c])}">${esc(A.propName(c))}</a>`).join('')}</div></div></div>`;
+    }).join('');
+  }
+  const ENTRIES = [['search', '#/search', 'e_search', 'sky'], ['book', '#/properties', 'e_props', 'amber'], ['download', '#/download', 'e_dl', 'green'], ['robot', '#/help?s=ai', 'e_ai', 'violet']];
 
   // ================================================================ 首页 ==
   function renderHome() {
@@ -62,26 +84,21 @@
           ['leaf', nSrc, 'h_sources', '#/browse?tab=src'], ['wave', nTT, 'h_ttypes', '#/browse?tab=tt']].map(([i, n, k, h]) => `<a href="${h}">${ic(i, '')}<b>${fmt(n)}</b><span>${esc(t(k))}</span></a>`).join('')}</div>
       </div></section>
       <div class="wrap page">
-        <div class="grid-3">
+        <div class="grid-3 home-charts">
           <section class="card">${cardHead(t('h_props'), t('h_props_sub'))}<div class="chart-box" id="d-props"></div>${cardFoot(`<a href="#/stats">${esc(t('h_props_more'))}</a>`, 'd-props')}</section>
           <section class="card">${cardHead(t('h_src'), t('h_src_sub'))}<div class="chart-box" id="d-src"></div>${cardFoot(`<a href="#/browse?tab=src">${esc(t('h_src_more', { n: fmt(nSrc) }))}</a>`, 'd-src')}</section>
           <section class="card">${cardHead(t('h_tt'), t('h_tt_sub'))}<div class="chart-box" id="d-tt"></div>${cardFoot(`<a href="#/browse?tab=tt">${esc(t('h_tt_more', { n: fmt(nTT) }))}</a>`, 'd-tt')}</section>
         </div>
-        <div class="grid-3 mt">
-          <section class="card">${cardHead(t('h_origin'))}<div class="chart-box" id="d-origin" style="min-height:70px"></div><div class="card-body" style="padding-top:0"><p class="cite-box">${esc(t('h_origin_note', { p: pct(st.sd, D.nV) }))}</p></div>${cardFoot('', 'd-origin')}</section>
-          <section class="card"><div class="card-head"><h3>${ic('quote')}${esc(t('h_cite'))}</h3></div><div class="card-body"><p class="cite-box">${esc(t('h_cite_text'))}</p>
-            <div class="pills"><button class="btn ghost small" type="button" id="cite-copy">${ic('copy')}${esc(t('h_cite_copy'))}</button><button class="btn ghost small" type="button" id="cite-bib">BibTeX</button></div></div></section>
-          <section class="card"><div class="card-head"><h3>${ic('clock')}${esc(t('h_versions'))}</h3></div><div class="card-body"><ul class="ver-list">${(D.meta.releases || []).slice(0, 3).map((r) => `<li><b>${esc(r.version)}</b><span>${esc(r.date)}</span><div>${esc(clip(r[L] || r.zh, 70))}</div></li>`).join('')}</ul>
-            <div style="margin-top:8px"><a href="#/changelog">${esc(t('h_versions_all'))}</a></div></div></section>
-        </div>
-        <p class="banner mt">${esc(t('h_contrib'))} <a href="#/help?s=feedback">${esc(t('h_contrib_link'))}</a></p>
+        <div class="entry-grid mt">${ENTRIES.map(([i, h, k, tone]) => `<a class="entry card" href="${h}"><span class="entry-ic ${tone}">${ic(i)}</span><span><b>${esc(t(k))} →</b><span>${esc(t(k + '_d'))}</span></span></a>`).join('')}</div>
+        <section class="card wheel-card mt"><div class="wheel-fig">${propWheel()}</div>
+          <div class="wheel-side"><h2>${esc(t('h_wheel'))}</h2><p class="dim">${esc(t('h_wheel_sub'))}</p><div class="wl">${wheelLegend()}</div></div></section>
+        <p class="home-line">${esc(t('h_ver', { v: rel.version || '' }))} · ${esc(t('h_built', { d: D.meta.built }))} · <a href="#/changelog">${esc(t('nav_changelog'))}</a> · <span class="badge model">${esc(t('badge_model'))}</span> ${esc(t('h_line_model'))} · <a href="#/help?s=cite">${esc(t('h_line_cite'))}</a></p>
       </div>`;
     const go = (key, tok) => { location.hash = hrefSearch({ [key]: tok }); };
     setRedraw(() => {
       PFDCharts.hbar($('d-props'), top(st.propV, 10).map((c) => ({ key: D.meta.props[c], label: A.propName(c), value: st.propV[c] })), { labelWidth: 120, onClick: (k) => go('prop', k), valueFmt: fmt });
       PFDCharts.hbar($('d-src'), top(st.srcS, 10).map((c) => ({ key: d.src[c], label: A.srcLabel(c), value: st.srcS[c] })), { labelWidth: 110, onClick: (k) => go('src', k), valueFmt: fmt });
       PFDCharts.hbar($('d-tt'), top(st.ttS, 10, (c) => !A.isRoutine(c)).map((c) => ({ key: d.tt[c], label: A.ttLabel(c), value: st.ttS[c] })), { labelWidth: 130, onClick: (k) => go('tt', k), valueFmt: fmt });
-      originBar($('d-origin'));
     });
     const fld = $('hero-fld'), q = $('hero-q');
     const pick = (it) => { location.hash = it.type === 'doi' ? hrefSearch({ paper: it.tok }) : hrefSearch({ [it.key]: it.tok }); };
@@ -94,9 +111,40 @@
     };
     A.attachAC(q, { only: () => (fld.value === 'all' ? null : fld.value), onPick: pick, onEnter: submit });
     $('hero-form').onsubmit = (e) => { e.preventDefault(); submit(q.value.trim()); };
-    const citeText = () => `PDF · Protein Database of Functionality (${t('h_ver', { v: rel.version || '' })}). ${location.href.split('#')[0]} (${new Date().toISOString().slice(0, 10)}).`;
-    $('cite-copy').onclick = async () => { if (await A.copyText(citeText())) toast(t('copied')); };
-    $('cite-bib').onclick = async () => { if (await A.copyText(`@misc{pdfdb,\n  title = {PDF: Protein Database of Functionality},\n  note = {Version ${rel.version || ''}},\n  url = {${location.href.split('#')[0]}},\n  urldate = {${new Date().toISOString().slice(0, 10)}}\n}\n`)) toast(t('copied')); };
+  }
+
+  // ================================================================ 性质说明 ==
+  // 11-15 新页（借 ADMETlab 3.0「Endpoints Explanation」的形式）：17 项按四类成表，测什么 / 常见单位 / 最常用测试方法 / 数值数；单位和方法从库里现算
+  let PROP_METHODS = null;
+  function propMethods() {
+    if (PROP_METHODS) return PROP_METHODS;
+    const C = D.c, other = D.dict.method.findIndex((m) => m && m[0] === 'Other method'), out = D.meta.props.map(() => new Map());
+    const stdU = new Uint8Array(D.dict.unit.length), noU = D.dict.unit.indexOf('');      // 标准单位 = 有数值换算到它的单位；再加「无单位」
+    if (noU >= 0) stdU[noU] = 1;
+    for (let i = 0; i < D.nV; i++) { const m = C.vm[i]; if (C.vstd[i] === C.vstd[i]) stdU[C.vu[i]] = 1; if (m >= 3 && m !== other) { const mp = out[C.vp[i]]; mp.set(m, (mp.get(m) || 0) + 1); } }
+    out.stdU = stdU;
+    return (PROP_METHODS = out);
+  }
+  function renderProps(params) {
+    const el = $('view-props'), st = D.stats, d = D.dict, X = A.X, L = A.lang() === 'zh' ? 0 : 1, PM = propMethods();
+    const groups = X.PROP_GROUPS.map(([gk, gzh, gen, , c1, , props]) => {
+      const codes = props.map((p) => D.meta.props.indexOf(p)).filter((c) => c >= 0), n = codes.reduce((a, c) => a + st.propV[c], 0);
+      const rows = codes.map((c) => {
+        const key = D.meta.props[c], tot = st.propV[c];
+        const units = [...st.propUnit[c].entries()].filter(([u, k]) => PM.stdU[u] && k >= tot * 0.03).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([u]) => d.unit[u] || t('no_unit')).join(' · ');
+        const methods = [...PM[c].entries()].filter(([, k]) => k >= tot * 0.01).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([m, k]) => `${esc(A.methodName(m))} <span class="dim">${fmt(k)}</span>`).join('<br>');
+        return `<tr><td><a class="strong" href="${hrefSearch({ prop: key })}">${esc(A.propName(c))}</a><div class="dim">${esc(X.PROP_NAMES[key][L ? 0 : 1])}</div></td>
+          <td>${esc(X.PROP_DEF[key][L])}</td><td>${esc(units || '—')}</td><td>${methods || '—'}</td><td class="tnum">${fmt(tot)}</td><td class="nowrap"><a href="${A.propHref(key)}">${esc(t('pr_dist'))}</a></td></tr>`;
+      }).join('');
+      return `<section class="card mt pr-group" id="pg-${gk}"><div class="pr-head"><i style="background:${c1}"></i><h2>${esc(L ? gen : gzh)}</h2><span class="dim">${L ? '' : esc(gen) + ' · '}${esc(t('h_nvals', { n: fmt(n) }))}</span></div>
+        <div class="mini-wrap"><table class="mini pr-table"><thead><tr><th>${esc(t('pr_th_prop'))}</th><th>${esc(t('pr_th_def'))}</th><th>${esc(t('pr_th_unit'))}</th><th>${esc(t('pr_th_methods'))}</th><th class="tnum">${esc(t('pr_th_n'))}</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></section>`;
+    }).join('');
+    el.innerHTML = `<div class="wrap page"><div class="page-title">${ic('book')}<h1>${esc(t('nav_props'))}</h1></div><p class="page-sub">${esc(t('pr_sub'))}</p>
+      <div class="pr-jump">${X.PROP_GROUPS.map(([gk, gzh, gen, , c1]) => `<a class="chip" href="#/properties?g=${gk}"><i style="background:${c1}"></i>${esc(L ? gen : gzh)}</a>`).join('')}</div>
+      ${groups}<p class="hint mt">${esc(t('pr_note'))}</p></div>`;
+    const g = params.get('g');
+    if (g && $('pg-' + g)) setTimeout(() => $('pg-' + g).scrollIntoView({ block: 'start' }), 0);
+    redraw = null;
   }
 
   // ================================================================ 浏览 ==
@@ -473,5 +521,5 @@
     $('s-csv').onclick = () => dl('csv'); $('s-xlsx').onclick = () => dl('xlsx');
   }
 
-  A.pages = { renderHome, renderBrowse, renderStats, renderProperty, renderDownload, renderHelp, renderChangelog, renderBasket, renderCompare, renderPaper, renderSample };
+  A.pages = { renderHome, renderProps, renderBrowse, renderStats, renderProperty, renderDownload, renderHelp, renderChangelog, renderBasket, renderCompare, renderPaper, renderSample };
 })();

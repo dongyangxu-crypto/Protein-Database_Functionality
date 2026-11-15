@@ -34,6 +34,7 @@ Papers from eight publishers:
 ## Website features
 
 - **Search:** one search box with suggestions for protein sources, treatments, properties, test methods, journals and DOIs; tabbed filters (property and value, protein, sample treatment, test method, literature) with a count next to every option; ranges for treatment temperature, time, pH, pressure, power and frequency; filters for values with an SD and for pure-protein samples; batch search (paste a list of DOIs or sample names); a query builder (AND / OR / NOT between conditions, with a link you can copy and save); results per value, per sample or per paper; suggestions for which filter to drop when nothing matches.
+- **Property guide:** the 17 properties in four groups (techno-functional, colloidal, structure & chemistry, delivery & bioactivity), each with what it measures, common units, the test methods used most in the database and the number of values; the home page shows the same groups as a clickable ring.
 - **Browse, statistics and property pages:** browse by property, protein source, treatment type, test method or journal; distribution charts for the whole database; for a property × protein × treatment, the values plotted paper by paper, with method summaries, treatment conditions and a table of values.
 - **Download:** the complete database table by table, or one flat table per property (one row per value, opens directly in Excel), with row counts and file sizes; search results export to CSV / TSV / Excel / JSON (all results, the current page or selected rows; long or wide layout; columns of your choice); reference lists export to RIS / BibTeX / plain text; every chart downloads as PNG / SVG / data CSV.
 - **Basket:** collect samples across searches (kept in your browser), compare 2–6 samples, or export them together.
@@ -136,6 +137,7 @@ Developed by the [AI4FH Lab](https://dzjxzyd.github.io/ai4fh-lab/) (Artificial I
 ### 网站功能
 
 - **检索**：一个检索框认蛋白来源、处理方式、性质、测试方法、期刊和 DOI，边输边提示；分页签筛选（性质与数值、蛋白、样品处理、测试方法、文献），每个选项带计数；处理温度、时间、pH、压力、功率、频率范围；只看有 SD 的数值、只看纯蛋白样品；批量检索（粘贴一列 DOI 或样品名）；高级查询（条件之间 AND / OR / NOT，可复制链接、保存）；结果按数值、样品或论文显示；没有结果时提示去掉哪个条件。
+- **性质说明**：17 项性质分四类（功能特性、胶体与颗粒、结构与化学、递送与活性），每项写测什么、常见单位、库里最常用的测试方法和数值数；首页用可点的色环展示同样的分类。
 - **浏览、统计、性质分布页**：按性质、蛋白来源、处理类型、测试方法、期刊浏览；全库分布图；某性质 × 某蛋白 × 某处理的数值按论文分列画图，附方法概述、处理条件和数值表。
 - **下载**：完整数据库按表分别下载，或按 17 项性质下载平铺表（一行一个数值，Excel 直接打开），附行数和大小；检索结果导出 CSV / TSV / Excel / JSON（全部结果、当前页或勾选的行，长表或宽表，可自选列）；文献列表导出 RIS / BibTeX / 纯文本；每张图可下载 PNG / SVG / 数据 CSV。
 - **数据篮**：跨多次检索收集样品（存在浏览器里），对比 2–6 个样品，或一起导出。
