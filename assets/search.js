@@ -27,7 +27,8 @@
   const shownCols = () => COLS.filter((c) => c.fixed || visibleCols.has(c.key));
 
   const TABS = [['prop', 'tab_prop'], ['protein', 'tab_protein'], ['treat', 'tab_treat'], ['method', 'tab_method'], ['lit', 'tab_lit'], ['batch', 'tab_batch'], ['adv', 'tab_adv']];
-  const TAB_FACETS = { prop: ['prop', 'unit', 'origin'], protein: ['src', 'pcat', 'form', 'sys'], treat: ['tt', 'tcat'], method: ['method'], lit: ['journal'] };
+  const TAB_FACETS = { prop: ['origin', 'prop', 'unit'],   // 11-16 用户：数据来源放在功能特性上面
+  protein: ['src', 'pcat', 'form', 'sys'], treat: ['tt', 'tcat'], method: ['method'], lit: ['journal'] };
   const WIDE = new Set(['src', 'tt', 'method', 'prop', 'unit', 'origin']);   // 11-16 单位、数据来源也横排，和性质同一套列对齐
   const TAB_RANGES = { prop: ['vmin', 'phmin'], treat: ['tmin', 'dmin', 'tpmin', 'prmin', 'pwmin', 'fqmin'] };
   const TAB_FLAGS = { prop: ['sd'], protein: ['pure'] };
