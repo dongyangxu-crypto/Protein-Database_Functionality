@@ -122,7 +122,7 @@ window.PDF_TEXT = (() => {
     f_method: '测试方法', f_sys: '体系', f_journal: '期刊', f_unit: '单位', f_origin: '数据来源', f_paper: '论文', f_q: '关键词',
     f_batch: '批量', f_adv: '高级查询', f_sd: '有 SD', f_pure: '纯蛋白样品',
     o_author: '作者原值', o_model: '来源于模型（读图）', m_unextracted: '未提取方法', m_none: '原文未写明方法', m_amb: '方法不确定',
-    not_stated: '原文未写明', no_unit: '（无单位）', unit_other: '其他（未换算的原文单位）', unknown: '不明', find: '查找…', more: '更多（{n}）', less: '收起', reset: '清除全部',
+    not_stated: '原文未写明', no_unit: '（无单位）', unit_other: '其他（未换算）', unknown: '不明', find: '查找…', more: '更多（{n}）', less: '收起', reset: '清除全部',
     clear: '清除', min: '最小', max: '最大', all: '全部', copy: '复制', copied: '已复制',
     // 首页
     h_title: '<em>PDF</em>：蛋白质功能特性数据库', h_ver: '版本 {v}', h_built: '数据更新于 {d}', h_nprops: '{n} 项功能特性',
@@ -258,7 +258,7 @@ window.PDF_TEXT = (() => {
     f_tt: 'Sample treatment type', f_tcat: 'Sample treatment category', f_method: 'Test method', f_sys: 'System', f_journal: 'Journal',
     f_unit: 'Unit', f_origin: 'Data origin', f_paper: 'Paper', f_q: 'Keyword', f_batch: 'Batch', f_adv: 'Query', f_sd: 'With SD',
     f_pure: 'Pure protein', o_author: 'Author-reported', o_model: 'Model-derived (from figure)', m_unextracted: 'Method not extracted',
-    m_none: 'Not stated in the article', m_amb: 'Method unclear', not_stated: 'Not stated', no_unit: '(no unit)', unit_other: 'Other (original units, not converted)', unknown: 'Unknown',
+    m_none: 'Not stated in the article', m_amb: 'Method unclear', not_stated: 'Not stated', no_unit: '(no unit)', unit_other: 'Other (not converted)', unknown: 'Unknown',
     find: 'Find…', more: 'More ({n})', less: 'Less', reset: 'Clear all', clear: 'Clear', min: 'Min', max: 'Max', all: 'All', copy: 'Copy', copied: 'Copied',
     h_title: '<em>PDF</em>: Protein Database of Functionality', h_ver: 'Version {v}', h_built: 'Data updated {d}', h_nprops: '{n} functional properties',
     h_lead: 'Functional-property values of food proteins extracted from published papers — every value linked to its sample, sample treatment and test method.',

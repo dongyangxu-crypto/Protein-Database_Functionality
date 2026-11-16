@@ -28,7 +28,7 @@
 
   const TABS = [['prop', 'tab_prop'], ['protein', 'tab_protein'], ['treat', 'tab_treat'], ['method', 'tab_method'], ['lit', 'tab_lit'], ['batch', 'tab_batch'], ['adv', 'tab_adv']];
   const TAB_FACETS = { prop: ['prop', 'unit', 'origin'], protein: ['src', 'pcat', 'form', 'sys'], treat: ['tt', 'tcat'], method: ['method'], lit: ['journal'] };
-  const WIDE = new Set(['src', 'tt', 'method', 'prop']);
+  const WIDE = new Set(['src', 'tt', 'method', 'prop', 'unit', 'origin']);   // 11-16 单位、数据来源也横排，和性质同一套列对齐
   const TAB_RANGES = { prop: ['vmin', 'phmin'], treat: ['tmin', 'dmin', 'tpmin', 'prmin', 'pwmin', 'fqmin'] };
   const TAB_FLAGS = { prop: ['sd'], protein: ['pure'] };
   const rangeDef = (a) => A.RANGE_DEFS.find((r) => r[0] === a);
@@ -292,6 +292,8 @@
     return h;
   }
   const outNote = (rr) => (rr && rr.out ? ' ' + t('c_out', { n: fmt(rr.out), a: PFDCharts.fmt(rr.min), b: PFDCharts.fmt(rr.max) }) : '');
+  // 11-16 用户：结果里蛋白来源、处理类型的「+」（点了加进筛选）和左侧筛选重复、用处不大 → 只留标签，不可点
+  const tag = (label) => `<span class="chip tag">${esc(label)}</span>`;
   const addBtn = (key, tok, label, cls = 'chip add') => `<button class="${cls}" type="button" data-addf="${key}" data-tok="${esc(tok)}" title="${esc(t('add_filter'))}">${esc(label)}</button>`;
   function methodHTML(i, clampIt) {
     const parts = [], m = D.c.vm[i];
@@ -317,12 +319,12 @@
   }
   function proteinHTML(s) {
     const srcs = A.srcOf(s), raw = SX(s, 'psrc'), f = D.c.sform[s];
-    return `<div>${srcs.length ? srcs.map((c) => addBtn('src', D.dict.src[c], A.srcLabel(c))).join('') : esc(raw || '—')}</div>
+    return `<div>${srcs.length ? srcs.map((c) => tag(A.srcLabel(c))).join('') : esc(raw || '—')}</div>
       <div class="dim">${esc([f ? A.formLabel(f) : '', cat(D.dict.pcat[D.c.scat[s]])].filter(Boolean).join(' · '))}</div>`;
   }
   function typesHTML(s, max = 4) {
     const tts = A.ttOf(s), shown = tts.filter((c) => !A.isRoutine(c)), list = (shown.length ? shown : tts).slice(0, max);
-    return list.map((c) => addBtn('tt', D.dict.tt[c], A.ttLabel(c))).join('') + (shown.length > max ? `<span class="dim">+${shown.length - max}</span>` : '');
+    return list.map((c) => tag(A.ttLabel(c))).join('') + (shown.length > max ? `<span class="dim">+${shown.length - max}</span>` : '');
   }
   const treatText = (s) => { const x = SX(s, 'treat'); return x === '未处理' ? t('d_untreated') : x; };
   function cellHTML(key, i) {
